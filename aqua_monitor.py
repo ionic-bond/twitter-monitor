@@ -17,8 +17,8 @@ class AquaMonitor:
         return os.environ.get("BEARER_TOKEN")
     
     def create_url(self):
-        # user_id = 1024528894940987392
-        user_id = 2894395322
+        user_id = 1024528894940987392
+        # user_id = 2894395322
         return "https://api.twitter.com/2/users/{}/following".format(user_id)
     
     def create_headers(self, bearer_token):
@@ -74,6 +74,6 @@ class AquaMonitor:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='/tmp/aqua.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
     aqua = AquaMonitor()
     aqua.work()
