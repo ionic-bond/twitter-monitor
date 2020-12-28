@@ -8,7 +8,7 @@ import time
 class AquaMonitor:
 
     def __init__(self):
-        self.sleep_second = 30
+        self.sleep_second = 60
         self.following_users = self.get_all_following_users()
         logging.info('Now following users number: {}'.format(len(self.following_users)))
         logging.info(self.following_users)
@@ -45,14 +45,14 @@ class AquaMonitor:
         url = self.create_url()
         headers = self.create_headers(bearer_token)
         finished = False
-        params = dict()
+        params = { 'max_results': 1000 }
         result = list()
         while not finished:
             json_response = self.connect_to_endpoint(url, headers, params)
             if 'data' in json_response:
                 result.extend(json_response['data'])
             if 'meta' in json_response and 'next_token' in json_response['meta']:
-                params = { "pagination_token": json_response['meta']['next_token'] }
+                params = { 'max_results': 1000, 'pagination_token': json_response['meta']['next_token'] }
             else:
                 finished = True
         return set([user['username'] for user in result])
