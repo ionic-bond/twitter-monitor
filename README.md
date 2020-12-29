@@ -1,1 +1,1 @@
-# TwitterMonitor
+# TwitterFollowingMonitor
