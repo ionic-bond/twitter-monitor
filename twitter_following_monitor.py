@@ -23,7 +23,7 @@ class Sleeper:
                 logging.info('Changed sleep second to {}'.format(self.sleep_secnod))
         else:
             self.normal_count = 0
-            self.sleep_secnod *= 2
+            self.sleep_second *= 2
             logging.info('Changed sleep second to {}'.format(self.sleep_secnod))
         time.sleep(self.sleep_second)
 
