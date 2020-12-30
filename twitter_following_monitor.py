@@ -91,10 +91,13 @@ class Monitor:
 
 
     def run(self):
+        count = 0
         while True:
             self.sleeper.sleep(normal=True)
             following_users = self.get_all_following_users()
-            logging.info('Number of following users: {}'.format(len(following_users)))
+            count += 1
+            if count % 10 == 0:
+                logging.info('Number of following users: {}'.format(len(following_users)))
             self.detect_changes(self.following_users, following_users)
             self.following_users = following_users
 
