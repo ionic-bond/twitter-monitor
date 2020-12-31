@@ -87,7 +87,7 @@ class Monitor:
             logging.error('New followed users detected: {}'.format(inc_users))
         dec_users = old_following_users - new_following_users
         if dec_users:
-            logging.error('Unfollowed user detected: {}'.format(dec_users))
+            logging.error('Unfollowed users detected: {}'.format(dec_users))
 
 
     def run(self):
