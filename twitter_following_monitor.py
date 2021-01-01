@@ -113,7 +113,7 @@ def cli():
               default='/tmp/twitter_following_monitor.log',
               help="Path to output logging's log.")
 def run(username, log_path):
-    logging.basicConfig(filename=log_path, format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename=log_path, format='%(asctime)s - %(message)s', level=logging.INFO)
     monitor = Monitor(username)
     monitor.run()
 
