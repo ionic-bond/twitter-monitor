@@ -37,8 +37,8 @@ class TelegramNotifier:
             return
         token = os.environ.get("TELEGRAM_TOKEN")
         self.bot = telegram.Bot(token=token)
-        logging.info('Init telegram bot succeed: {}'.format(self.bot.get_me()))
         self.chat_id = chat_id
+        self.send_message('Init telegram bot succeed: {}'.format(self.bot.get_me()))
 
 
     def send_message(self, message: str):
