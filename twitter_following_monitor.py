@@ -31,13 +31,14 @@ class Sleeper:
 
 class TelegramNotifier:
 
-    def __init__(self, chat_id: str):
+    def __init__(self, chat_id: str, bot_name: str):
         if not chat_id:
             logging.warning('Telegram id not set, skip initialization of telegram notifier.')
             return
         token = os.environ.get("TELEGRAM_TOKEN")
         self.bot = telegram.Bot(token=token)
         self.chat_id = chat_id
+        self.bot_name = bot_name
         self.send_message('Init telegram bot succeed: {}'.format(self.bot.get_me()))
 
 
@@ -46,7 +47,7 @@ class TelegramNotifier:
         if not self.bot:
             logging.warning('Telegram notifier not initialized, skip.')
             return
-        self.bot.send_message(chat_id=self.chat_id, text=message)
+        self.bot.send_message(chat_id=self.chat_id, text='[{}] {}'.format(self.bot_name, message))
 
 
 class Monitor:
@@ -57,7 +58,7 @@ class Monitor:
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
             username, self.user_id, self.following_users))
-        self.telegram_notifier = TelegramNotifier(telegram_chat_id)
+        self.telegram_notifier = TelegramNotifier(chat_id=telegram_chat_id, bot_name=username)
 
 
     @staticmethod
