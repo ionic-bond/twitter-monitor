@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import requests
+import telegram
 import time
 
 MIN_SLEEP_SECOND = 60
@@ -28,14 +29,35 @@ class Sleeper:
         time.sleep(self.sleep_second)
 
 
+class TelegramNotifier:
+
+    def __init__(self, chat_id: str):
+        if not chat_id:
+            logging.warning('Telegram id not set, skip initialization of telegram notifier.')
+            return
+        token = os.environ.get("TELEGRAM_TOKEN")
+        self.bot = telegram.Bot(token=token)
+        logging.info('Init telegram bot succeed: {}'.format(self.bot.get_me()))
+        self.chat_id = chat_id
+
+
+    def send_message(self, message: str):
+        logging.info('Sending message: {}'.format(message))
+        if not self.bot:
+            logging.warning('Telegram notifier not initialized, skip.')
+            return
+        self.bot.send_message(chat_id=self.chat_id, text=message)
+
+
 class Monitor:
 
-    def __init__(self, username: str):
+    def __init__(self, username: str, telegram_chat_id: str):
         self.sleeper = Sleeper()
         self.user_id = self.get_user_id(username)
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
             username, self.user_id, self.following_users))
+        self.telegram_notifier = TelegramNotifier(telegram_chat_id)
 
 
     @staticmethod
@@ -75,8 +97,7 @@ class Monitor:
         return set([result.get('username', '') for result in results])
 
 
-    @staticmethod
-    def detect_changes(old_following_users: set, new_following_users: set):
+    def detect_changes(self, old_following_users: set, new_following_users: set):
         if old_following_users == new_following_users:
             return
         max_changes = max(len(old_following_users) / 2, 10)
@@ -84,10 +105,12 @@ class Monitor:
             return
         inc_users = new_following_users - old_following_users
         if inc_users:
-            logging.error('New followed users detected: {}'.format(inc_users))
+            self.telegram_notifier.send_message(
+                'New followed users detected: {}'.format(inc_users))
         dec_users = old_following_users - new_following_users
         if dec_users:
-            logging.error('Unfollowed users detected: {}'.format(dec_users))
+            self.telegram_notifier.send_message(
+                'Unfollowed users detected: {}'.format(dec_users))
 
 
     def run(self):
@@ -112,9 +135,10 @@ def cli():
 @click.option('--log_path',
               default='/tmp/twitter_following_monitor.log',
               help="Path to output logging's log.")
-def run(username, log_path):
+@click.option('--telegram_chat_id', required=False, help="Telegram char id.")
+def run(username, log_path, telegram_chat_id):
     logging.basicConfig(filename=log_path, format='%(asctime)s - %(message)s', level=logging.INFO)
-    monitor = Monitor(username)
+    monitor = Monitor(username, telegram_chat_id)
     monitor.run()
 
 
