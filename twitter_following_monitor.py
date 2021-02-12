@@ -81,7 +81,7 @@ class Monitor:
 
 
     def get_user_id(self, username: str) -> str:
-        url = url = "https://api.twitter.com/2/users/by/username/{}".format(username)
+        url = "https://api.twitter.com/2/users/by/username/{}".format(username)
         user = self.send_get_request(url)
         return user['data']['id']
 
