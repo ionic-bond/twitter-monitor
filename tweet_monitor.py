@@ -42,7 +42,7 @@ class Monitor:
                     self.telegram_notifier.send_message(tweet['text'])
                 self.last_tweet_id = tweets[0]['id']
             count += 1
-            if count % 10 == 0:
+            if count % 1000 == 0:
                 logging.info('Last tweet id: {}'.format(self.last_tweet_id))
 
 
