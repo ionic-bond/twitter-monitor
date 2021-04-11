@@ -8,7 +8,7 @@ import requests
 import telegram
 import time
 
-MIN_SLEEP_SECOND = 60
+MIN_SLEEP_SECOND = 30
 
 
 class Sleeper:
@@ -58,9 +58,10 @@ class Monitor:
     def __init__(self, username: str, telegram_chat_id: str):
         self.sleeper = Sleeper()
         self.user_id = self.get_user_id(username)
-        self.following_users = self.get_all_following_users()
-        logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
-            username, self.user_id, self.following_users))
+        tweets = self.get_tweets()
+        self.last_tweet_id = tweets[0]['id']
+        logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
+            username, self.user_id, tweets[0]))
         self.telegram_notifier = TelegramNotifier(chat_id=telegram_chat_id, bot_name=username)
 
 
@@ -87,46 +88,28 @@ class Monitor:
         return user['data']['id']
 
 
-    def get_all_following_users(self) -> set:
-        url = 'https://api.twitter.com/2/users/{}/following'.format(self.user_id)
-        params = {'max_results': 1000}
+    def get_tweets(self, since_id: str=None) -> set:
+        url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
+        params = {'max_results': 100}
+        if since_id:
+            params['since_id'] = since_id
         json_response = self.send_get_request(url, params)
         results = json_response.get('data', [])
-        next_token = json_response.get('meta', {}).get('next_token', '')
-        while next_token:
-            params['pagination_token'] = next_token
-            json_response = self.send_get_request(url, params)
-            results.extend(json_response.get('data', []))
-            next_token = json_response.get('meta', {}).get('next_token', '')
-        return set([result.get('username', '') for result in results])
-
-
-    def detect_changes(self, old_following_users: set, new_following_users: set):
-        if old_following_users == new_following_users:
-            return
-        max_changes = max(len(old_following_users) / 2, 10)
-        if abs(len(old_following_users) - len(new_following_users)) > max_changes:
-            return
-        inc_users = new_following_users - old_following_users
-        if inc_users:
-            self.telegram_notifier.send_message(
-                'New followed users detected: {}'.format(inc_users))
-        dec_users = old_following_users - new_following_users
-        if dec_users:
-            self.telegram_notifier.send_message(
-                'Unfollowed users detected: {}'.format(dec_users))
+        return results
 
 
     def run(self):
         count = 0
         while True:
             self.sleeper.sleep(normal=True)
-            following_users = self.get_all_following_users()
+            tweets = self.get_tweets(since_id=self.last_tweet_id)
+            if tweets:
+                for tweet in tweets:
+                    self.telegram_notifier.send_message(tweet['text'])
+                self.last_tweet_id = tweets[0]['id']
             count += 1
             if count % 10 == 0:
-                logging.info('Number of following users: {}'.format(len(following_users)))
-            self.detect_changes(self.following_users, following_users)
-            self.following_users = following_users
+                logging.info('Last tweet id: {}'.format(self.last_tweet_id))
 
 
 @click.group()
