@@ -25,4 +25,4 @@ class TelegramNotifier:
             logging.warning('Telegram notifier not initialized, skip.')
             return
         self.bot.send_message(chat_id=self.chat_id, text='[{}][{}] {}'.format(
-            self.bot_name, self.module, message))
+            self.username, self.module, message))
