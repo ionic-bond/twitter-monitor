@@ -17,7 +17,8 @@ class Monitor:
         self.last_tweet_id = tweets[0]['id']
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
             username, self.user_id, tweets[0]))
-        self.telegram_notifier = TelegramNotifier(chat_id=telegram_chat_id, bot_name=username)
+        self.telegram_notifier = TelegramNotifier(
+                chat_id=telegram_chat_id, username=username, module='Tweet')
 
 
     def get_tweets(self, since_id: str=None) -> set:

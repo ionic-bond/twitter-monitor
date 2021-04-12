@@ -16,7 +16,8 @@ class Monitor:
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
             username, self.user_id, self.following_users))
-        self.telegram_notifier = TelegramNotifier(chat_id=telegram_chat_id, bot_name=username)
+        self.telegram_notifier = TelegramNotifier(
+                chat_id=telegram_chat_id, username=username, module='Following')
 
 
     def get_all_following_users(self) -> set:

@@ -6,7 +6,7 @@ import telegram
 
 class TelegramNotifier:
 
-    def __init__(self, chat_id: str, bot_name: str):
+    def __init__(self, chat_id: str, username: str, module: str):
         if not chat_id:
             logging.warning('Telegram id not set, skip initialization of telegram notifier.')
             self.bot = None
@@ -14,7 +14,8 @@ class TelegramNotifier:
         token = os.environ.get("TELEGRAM_TOKEN")
         self.bot = telegram.Bot(token=token)
         self.chat_id = chat_id
-        self.bot_name = bot_name
+        self.username = username
+        self.module = module
         self.send_message('Init telegram bot succeed: {}'.format(self.bot.get_me()))
 
 
@@ -23,4 +24,5 @@ class TelegramNotifier:
         if not self.bot:
             logging.warning('Telegram notifier not initialized, skip.')
             return
-        self.bot.send_message(chat_id=self.chat_id, text='[{}] {}'.format(self.bot_name, message))
+        self.bot.send_message(chat_id=self.chat_id, text='[{}][{}] {}'.format(
+            self.bot_name, self.module, message))
