@@ -11,7 +11,11 @@ def get_headers():
 
 def send_get_request(url: str, params: dict={}):
     headers = get_headers()
-    response = requests.request("GET", url, headers=headers, params=params)
+    try:
+        response = requests.request("GET", url, headers=headers, params=params)
+    except requests.exceptions.ConnectionError as e:
+        logging.error("Request error: {}".format(e))
+        return None
     if response.status_code != 200:
         logging.error("Request returned an error: {} {}".format(
             response.status_code, response.text))
