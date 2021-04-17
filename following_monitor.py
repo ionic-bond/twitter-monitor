@@ -46,12 +46,12 @@ class Monitor:
         max_changes = max(len(old_following_users) / 2, 10)
         if abs(len(old_following_users) - len(new_following_users)) > max_changes:
             return
-        inc_users = new_following_users - old_following_users
-        if inc_users:
-            self.telegram_notifier.send_message('Follow: {}'.format(inc_users))
         dec_users = old_following_users - new_following_users
         if dec_users:
             self.telegram_notifier.send_message('Unfollow: {}'.format(dec_users))
+        inc_users = new_following_users - old_following_users
+        if inc_users:
+            self.telegram_notifier.send_message('Follow: {}'.format(inc_users))
 
 
     def run(self):
