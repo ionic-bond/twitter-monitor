@@ -10,14 +10,14 @@ from utils import send_get_request, get_user_id, init_logging
 
 class FollowingMonitor:
 
-    def __init__(self, username: str, telegram_chat_id: str):
+    def __init__(self, username: str, telegram_chat_ids: str):
         self.sleeper = Sleeper(60)
         self.user_id = get_user_id(username)
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
             username, self.user_id, self.following_users))
         self.telegram_notifier = TelegramNotifier(
-                chat_id=telegram_chat_id, username=username, module='Following')
+                chat_ids=telegram_chat_ids, username=username, module='Following')
 
 
     def get_all_following_users(self) -> set:
@@ -76,10 +76,10 @@ def cli():
 @click.option('--log_path',
               default='/tmp/twitter_following_monitor.log',
               help="Path to output logging's log.")
-@click.option('--telegram_chat_id', required=False, help="Telegram char id.")
-def run(username, log_path, telegram_chat_id):
+@click.option('--telegram_chat_ids', required=False, help="Telegram char ids, separate by comma.")
+def run(username, log_path, telegram_chat_ids):
     init_logging(log_path)
-    following_monitor = FollowingMonitor(username, telegram_chat_id)
+    following_monitor = FollowingMonitor(username, telegram_chat_ids)
     following_monitor.run()
 
 

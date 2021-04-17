@@ -11,13 +11,13 @@ from utils import send_get_request, get_user_id, get_like_id_set, init_logging
 
 class LikeMonitor:
 
-    def __init__(self, username: str, telegram_chat_id: str):
+    def __init__(self, username: str, telegram_chat_ids: str):
         self.sleeper = Sleeper(60)
         self.username = username
         self.existing_like_id_set = get_like_id_set(self.get_likes())
         logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(self.username, self.existing_like_id_set))
         self.telegram_notifier = TelegramNotifier(
-                chat_id=telegram_chat_id, username=username, module='Like')
+                chat_ids=telegram_chat_ids, username=username, module='Like')
 
 
     def get_likes(self, max_number: int=200) -> list:
@@ -54,10 +54,10 @@ def cli():
 @click.option('--log_path',
               default='/tmp/twitter_following_monitor.log',
               help="Path to output logging's log.")
-@click.option('--telegram_chat_id', required=False, help="Telegram char id.")
-def run(username, log_path, telegram_chat_id):
+@click.option('--telegram_chat_ids', required=False, help="Telegram char ids, separate by comma.")
+def run(username, log_path, telegram_chat_ids):
     init_logging(log_path)
-    like_monitor = LikeMonitor(username, telegram_chat_id)
+    like_monitor = LikeMonitor(username, telegram_chat_ids)
     like_monitor.run()
 
 
