@@ -5,10 +5,10 @@ import logging
 
 from sleeper import Sleeper
 from telegram_notifier import TelegramNotifier
-from utils import send_get_request, get_user_id
+from utils import send_get_request, get_user_id, init_logging
 
 
-class Monitor:
+class FollowingMonitor:
 
     def __init__(self, username: str, telegram_chat_id: str):
         self.sleeper = Sleeper(60)
@@ -78,9 +78,9 @@ def cli():
               help="Path to output logging's log.")
 @click.option('--telegram_chat_id', required=False, help="Telegram char id.")
 def run(username, log_path, telegram_chat_id):
-    logging.basicConfig(filename=log_path, format='%(asctime)s - %(message)s', level=logging.INFO)
-    monitor = Monitor(username, telegram_chat_id)
-    monitor.run()
+    init_logging(log_path)
+    following_monitor = FollowingMonitor(username, telegram_chat_id)
+    following_monitor.run()
 
 
 if __name__ == "__main__":

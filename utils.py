@@ -3,6 +3,7 @@
 import logging
 import os
 import requests
+import sys
 
 
 def get_headers():
@@ -28,3 +29,10 @@ def get_user_id(username: str) -> str:
     while not user:
         user = send_get_request(url)
     return user['data']['id']
+
+def get_like_id_set(likes: list) -> set:
+    return set([like['id'] for like in likes])
+
+def init_logging(log_path):
+    logging.basicConfig(filename=log_path, format='%(asctime)s - %(message)s', level=logging.INFO)
+
