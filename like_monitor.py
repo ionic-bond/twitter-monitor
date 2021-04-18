@@ -21,7 +21,7 @@ class LikeMonitor:
 
 
     def get_likes(self, max_number: int=200) -> list:
-        url = "https://api.twitter.com/1.1/favorites/list.json"
+        url = 'https://api.twitter.com/1.1/favorites/list.json'
         params = { 'screen_name': self.username, 'count': max_number }
         json_response = send_get_request(url, params)
         while not json_response:
@@ -50,14 +50,14 @@ def cli():
 
 
 @cli.command()
-@click.option('--username', required=True, help="Monitoring username.")
-@click.option('--log_path', default=None, help="Path to output logging's log.")
-@click.option('--telegram_chat_ids', required=False, help="Telegram char ids, separate by comma.")
+@click.option('--username', required=True, help='Monitoring username.')
+@click.option('--log_path', default=None, help='Path to output logging\'s log.')
+@click.option('--telegram_chat_ids', required=False, help='Telegram char ids, separate by comma.')
 def run(username, log_path, telegram_chat_ids):
     init_logging(log_path)
     like_monitor = LikeMonitor(username, telegram_chat_ids)
     like_monitor.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     cli()

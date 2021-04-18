@@ -72,14 +72,14 @@ def cli():
 
 
 @cli.command()
-@click.option('--username', required=True, help="Monitoring username.")
-@click.option('--log_path', default=None, help="Path to output logging's log.")
-@click.option('--telegram_chat_ids', required=False, help="Telegram char ids, separate by comma.")
+@click.option('--username', required=True, help='Monitoring username.')
+@click.option('--log_path', default=None, help='Path to output logging\'s log.')
+@click.option('--telegram_chat_ids', required=False, help='Telegram char ids, separate by comma.')
 def run(username, log_path, telegram_chat_ids):
     init_logging(log_path)
     following_monitor = FollowingMonitor(username, telegram_chat_ids)
     following_monitor.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     cli()

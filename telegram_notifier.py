@@ -14,7 +14,7 @@ class TelegramNotifier:
             logging.warning('Telegram id not set, skip initialization of telegram notifier.')
             self.bot = None
             return
-        token = get_token("TELEGRAM_TOKEN")
+        token = get_token('TELEGRAM_TOKEN')
         if not token:
             raise ValueError('TELEGRAM_TOKEN is null, please fill in it.')
         self.bot = telegram.Bot(token=token)
