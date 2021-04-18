@@ -1,13 +1,21 @@
 #!/usr/bin/python3
 
+import json
 import logging
-import os
 import requests
 import sys
 
 
+def get_token(token_name: str) -> str:
+    with open('token.json', 'r') as token_file:
+        data = json.load(token_file)
+        token = data.get(token_name, None)
+        return token
+
 def get_headers():
-    token = os.environ.get("BEARER_TOKEN")
+    token = get_token("BEARER_TOKEN")
+    if not token:
+        raise ValueError('BEARER_TOKEN is null, please fill in it.')
     return {"Authorization": "Bearer {}".format(token)}
 
 def send_get_request(url: str, params: dict={}):

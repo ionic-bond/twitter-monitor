@@ -4,6 +4,9 @@ import logging
 import os
 import telegram
 
+from utils import get_token
+
+
 class TelegramNotifier:
 
     def __init__(self, chat_ids: str, username: str, module: str):
@@ -11,7 +14,9 @@ class TelegramNotifier:
             logging.warning('Telegram id not set, skip initialization of telegram notifier.')
             self.bot = None
             return
-        token = os.environ.get("TELEGRAM_TOKEN")
+        token = get_token("TELEGRAM_TOKEN")
+        if not token:
+            raise ValueError('TELEGRAM_TOKEN is null, please fill in it.')
         self.bot = telegram.Bot(token=token)
         self.chat_ids = chat_ids.split(',')
         self.username = username
