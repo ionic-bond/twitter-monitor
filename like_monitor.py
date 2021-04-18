@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import click
+from datetime import datetime, timedelta
 import logging
 import json
 
@@ -18,6 +19,7 @@ class LikeMonitor:
         logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(self.username, self.existing_like_id_set))
         self.telegram_notifier = TelegramNotifier(
                 chat_ids=telegram_chat_ids, username=username, module='Like')
+        self.last_log_time = datetime.now()
 
 
     def get_likes(self, max_number: int=200) -> list:
@@ -31,7 +33,6 @@ class LikeMonitor:
 
 
     def run(self):
-        count = 0
         while True:
             self.sleeper.sleep(normal=True)
             likes = self.get_likes()
@@ -39,9 +40,9 @@ class LikeMonitor:
                 if like['id'] not in self.existing_like_id_set:
                     self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'], like['text']))
             self.existing_like_id_set |= get_like_id_set(likes)
-            count += 1
-            if count % 100 == 0:
+            if datetime.now() - self.last_log_time > timedelta(hours=1):
                 logging.info('Existing like id number: {}'.format(len(self.existing_like_id_set)))
+                self.last_log_time = datetime.now()
 
 
 @click.group()

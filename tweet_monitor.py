@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import click
+from datetime import datetime, timedelta
 import logging
 
 from sleeper import Sleeper
@@ -19,6 +20,7 @@ class TweetMonitor:
             username, self.user_id, tweets[0]))
         self.telegram_notifier = TelegramNotifier(
                 chat_ids=telegram_chat_ids, username=username, module='Tweet')
+        self.last_log_time = datetime.now()
 
 
     def get_tweets(self, since_id: str=None) -> set:
@@ -34,7 +36,6 @@ class TweetMonitor:
 
 
     def run(self):
-        count = 0
         while True:
             self.sleeper.sleep(normal=True)
             tweets = self.get_tweets(since_id=self.last_tweet_id)
@@ -42,9 +43,9 @@ class TweetMonitor:
                 for tweet in tweets:
                     self.telegram_notifier.send_message(tweet['text'])
                 self.last_tweet_id = tweets[0]['id']
-            count += 1
-            if count % 1000 == 0:
+            if datetime.now() - self.last_log_time > timedelta(hours=1):
                 logging.info('Last tweet id: {}'.format(self.last_tweet_id))
+                self.last_log_time = datetime.now()
 
 
 @click.group()

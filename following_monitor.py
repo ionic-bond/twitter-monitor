@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import click
+from datetime import datetime, timedelta
 import logging
 
 from sleeper import Sleeper
@@ -18,6 +19,7 @@ class FollowingMonitor:
             username, self.user_id, self.following_users))
         self.telegram_notifier = TelegramNotifier(
                 chat_ids=telegram_chat_ids, username=username, module='Following')
+        self.last_log_time = datetime.now()
 
 
     def get_all_following_users(self) -> set:
@@ -55,15 +57,14 @@ class FollowingMonitor:
 
 
     def run(self):
-        count = 0
         while True:
             self.sleeper.sleep(normal=True)
             following_users = self.get_all_following_users()
-            count += 1
-            if count % 10 == 0:
-                logging.info('Number of following users: {}'.format(len(following_users)))
             self.detect_changes(self.following_users, following_users)
             self.following_users = following_users
+            if datetime.now() - self.last_log_time > timedelta(hours=1):
+                logging.info('Number of following users: {}'.format(len(self.following_users)))
+                self.last_log_time = datetime.now()
 
 
 @click.group()
