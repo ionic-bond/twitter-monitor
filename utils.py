@@ -2,12 +2,13 @@
 
 import json
 import logging
+import os
 import requests
 import sys
 
 
 def get_token(token_name: str) -> str:
-    with open('token.json', 'r') as token_file:
+    with open(os.path.join(sys.path[0], 'token.json'), 'r') as token_file:
         data = json.load(token_file)
         token = data.get(token_name, None)
         return token

@@ -25,7 +25,6 @@ class TelegramNotifier:
 
 
     def send_message(self, message: str):
-        logging.info('Sending message: {}'.format(message))
         if not self.bot:
             logging.warning('Telegram notifier not initialized, skip.')
             return
