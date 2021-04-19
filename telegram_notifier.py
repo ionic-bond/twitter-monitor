@@ -29,4 +29,5 @@ class TelegramNotifier:
             return
         for chat_id in self.chat_ids:
             self.bot.send_message(chat_id=chat_id,
-                                  text='[{}][{}] {}'.format(self.username, self.module, message))
+                                  text='[{}][{}] {}'.format(self.username, self.module, message),
+                                  timeout=50)
