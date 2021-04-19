@@ -23,11 +23,10 @@ class TelegramNotifier:
         self.module = module
         self.send_message('Init telegram bot succeed.')
 
-
     def send_message(self, message: str):
         if not self.bot:
             logging.warning('Telegram notifier not initialized, skip.')
             return
         for chat_id in self.chat_ids:
-            self.bot.send_message(chat_id=chat_id, text='[{}][{}] {}'.format(
-                self.username, self.module, message))
+            self.bot.send_message(chat_id=chat_id,
+                                  text='[{}][{}] {}'.format(self.username, self.module, message))

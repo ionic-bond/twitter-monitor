@@ -18,12 +18,12 @@ class TweetMonitor:
         self.last_tweet_id = tweets[0]['id']
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
             username, self.user_id, tweets[0]))
-        self.telegram_notifier = TelegramNotifier(
-                chat_ids=telegram_chat_ids, username=username, module='Tweet')
+        self.telegram_notifier = TelegramNotifier(chat_ids=telegram_chat_ids,
+                                                  username=username,
+                                                  module='Tweet')
         self.last_log_time = datetime.now()
 
-
-    def get_tweets(self, since_id: str=None) -> set:
+    def get_tweets(self, since_id: str = None) -> set:
         url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
         params = {'max_results': 100}
         if since_id:
@@ -33,7 +33,6 @@ class TweetMonitor:
             self.sleeper.sleep(normal=False)
             json_response = send_get_request(url, params)
         return json_response.get('data', [])
-
 
     def run(self):
         while True:

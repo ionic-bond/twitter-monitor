@@ -17,10 +17,10 @@ class FollowingMonitor:
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(
             username, self.user_id, self.following_users))
-        self.telegram_notifier = TelegramNotifier(
-                chat_ids=telegram_chat_ids, username=username, module='Following')
+        self.telegram_notifier = TelegramNotifier(chat_ids=telegram_chat_ids,
+                                                  username=username,
+                                                  module='Following')
         self.last_log_time = datetime.now()
-
 
     def get_all_following_users(self) -> set:
         url = 'https://api.twitter.com/2/users/{}/following'.format(self.user_id)
@@ -41,7 +41,6 @@ class FollowingMonitor:
             next_token = json_response.get('meta', {}).get('next_token', '')
         return set([result.get('username', '') for result in results])
 
-
     def detect_changes(self, old_following_users: set, new_following_users: set):
         if old_following_users == new_following_users:
             return
@@ -54,7 +53,6 @@ class FollowingMonitor:
         inc_users = new_following_users - old_following_users
         if inc_users:
             self.telegram_notifier.send_message('Follow: {}'.format(inc_users))
-
 
     def run(self):
         while True:

@@ -3,13 +3,13 @@
 import logging
 import time
 
+
 class Sleeper:
 
     def __init__(self, original_sleep_second):
         self.original_sleep_second = original_sleep_second
         self.sleep_second = original_sleep_second
         self.normal_count = 0
-
 
     def sleep(self, normal: bool):
         if normal:

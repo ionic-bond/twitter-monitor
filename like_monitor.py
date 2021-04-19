@@ -19,21 +19,21 @@ class LikeMonitor:
         self.sleeper = Sleeper(60)
         self.username = username
         self.existing_like_id_set = get_like_id_set(self.get_likes())
-        logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(self.username, self.existing_like_id_set))
-        self.telegram_notifier = TelegramNotifier(
-                chat_ids=telegram_chat_ids, username=username, module='Like')
+        logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(
+            self.username, self.existing_like_id_set))
+        self.telegram_notifier = TelegramNotifier(chat_ids=telegram_chat_ids,
+                                                  username=username,
+                                                  module='Like')
         self.last_log_time = datetime.now()
 
-
-    def get_likes(self, max_number: int=200) -> list:
+    def get_likes(self, max_number: int = 200) -> list:
         url = 'https://api.twitter.com/1.1/favorites/list.json'
-        params = { 'screen_name': self.username, 'count': max_number }
+        params = {'screen_name': self.username, 'count': max_number}
         json_response = send_get_request(url, params)
         while not json_response:
             self.sleeper.sleep(normal=False)
             json_response = send_get_request(url, params)
         return json_response
-
 
     def run(self):
         while True:
@@ -41,7 +41,8 @@ class LikeMonitor:
             likes = self.get_likes()
             for like in likes:
                 if like['id'] not in self.existing_like_id_set:
-                    self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'], like['text']))
+                    self.telegram_notifier.send_message('@{}: {}'.format(
+                        like['user']['screen_name'], like['text']))
             self.existing_like_id_set |= get_like_id_set(likes)
             if datetime.now() - self.last_log_time > timedelta(hours=1):
                 logging.info('Existing like id number: {}'.format(len(self.existing_like_id_set)))

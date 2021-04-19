@@ -13,13 +13,15 @@ def get_token(token_name: str) -> str:
         token = data.get(token_name, None)
         return token
 
+
 def get_headers():
     token = get_token('BEARER_TOKEN')
     if not token:
         raise ValueError('BEARER_TOKEN is null, please fill in it.')
     return {'Authorization': 'Bearer {}'.format(token)}
 
-def send_get_request(url: str, params: dict={}):
+
+def send_get_request(url: str, params: dict = {}):
     headers = get_headers()
     try:
         response = requests.request('GET', url, headers=headers, params=params)
@@ -27,10 +29,11 @@ def send_get_request(url: str, params: dict={}):
         logging.error('Request error: {}'.format(e))
         return None
     if response.status_code != 200:
-        logging.error('Request returned an error: {} {}'.format(
-            response.status_code, response.text))
+        logging.error('Request returned an error: {} {}'.format(response.status_code,
+                                                                response.text))
         return None
     return response.json()
+
 
 def get_user_id(username: str) -> str:
     url = 'https://api.twitter.com/2/users/by/username/{}'.format(username)
@@ -39,9 +42,10 @@ def get_user_id(username: str) -> str:
         user = send_get_request(url)
     return user['data']['id']
 
+
 def get_like_id_set(likes: list) -> set:
     return set([like['id'] for like in likes])
 
+
 def init_logging(log_path):
     logging.basicConfig(filename=log_path, format='%(asctime)s - %(message)s', level=logging.INFO)
-
