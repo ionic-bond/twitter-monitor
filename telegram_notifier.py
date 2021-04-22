@@ -25,7 +25,7 @@ class TelegramNotifier:
         self.sleeper = Sleeper(1)
         self.send_message('Init telegram bot succeed.')
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, disable_preview: bool=False):
         if not self.bot:
             logging.warning('Telegram notifier not initialized, skip.')
             return
@@ -33,6 +33,7 @@ class TelegramNotifier:
             for chat_id in self.chat_ids:
                 self.bot.send_message(chat_id=chat_id,
                                       text='[{}][{}] {}'.format(self.username, self.module, message),
+                                      disable_web_page_preview=disable_preview,
                                       timeout=50)
             self.sleeper.sleep(normal=True)
         except telegram.error as e:
