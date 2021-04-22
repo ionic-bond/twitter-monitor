@@ -53,7 +53,9 @@ class FollowingMonitor:
         data = json_response.get('data', {})
         details_str = 'Name: {}'.format(data.get('name', ''))
         details_str += '\nBio: {}'.format(data.get('description', ''))
-        details_str += '\nWebsite: {}'.format(data.get('url', ''))
+        website = data.get('url', '')
+        if website:
+            details_str += '\nWebsite: {}'.format(website)
         details_str += '\nJoined at: {}'.format(data.get('created_at', ''))
         public_metrics = data.get('public_metrics', {})
         details_str += '\nFollowing: {}'.format(public_metrics.get('following_count', -1))
