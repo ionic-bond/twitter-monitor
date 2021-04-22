@@ -12,7 +12,7 @@ from utils import send_get_request, get_user_id, init_logging
 class FollowingMonitor:
 
     def __init__(self, username: str, telegram_chat_ids: str):
-        self.sleeper = Sleeper(60)
+        self.sleeper = Sleeper(120)
         self.user_id = get_user_id(username)
         self.following_users = self.get_all_following_users()
         logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.format(

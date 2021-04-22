@@ -23,7 +23,7 @@ class TweetMonitor:
                                                   module='Tweet')
         self.last_log_time = datetime.now()
 
-    def get_tweets(self, since_id: str = None) -> set:
+    def get_tweets(self, since_id: str = None) -> list:
         url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
         params = {'max_results': 100}
         if since_id:
