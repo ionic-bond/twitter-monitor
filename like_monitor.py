@@ -16,7 +16,7 @@ from utils import send_get_request, get_user_id, get_like_id_set, init_logging
 class LikeMonitor:
 
     def __init__(self, username: str, telegram_chat_ids: str):
-        self.sleeper = Sleeper(60)
+        self.sleeper = Sleeper(30)
         self.username = username
         self.existing_like_id_set = get_like_id_set(self.get_likes())
         logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(
@@ -39,7 +39,7 @@ class LikeMonitor:
         while True:
             self.sleeper.sleep(normal=True)
             likes = self.get_likes()
-            for like in likes:
+            for like in reversed(likes):
                 if like['id'] not in self.existing_like_id_set:
                     self.telegram_notifier.send_message('@{}: {}'.format(
                         like['user']['screen_name'], like['text']))
