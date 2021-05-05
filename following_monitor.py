@@ -49,7 +49,7 @@ class FollowingMonitor:
         json_response = send_get_request(url, params)
         errors = json_response.get('errors', None)
         if errors:
-            return errors.get('detail', '')
+            return '\n'.join([error.get('detail', '') for error in errors])
         data = json_response.get('data', {})
         details_str = 'Name: {}'.format(data.get('name', ''))
         details_str += '\nBio: {}'.format(data.get('description', ''))
