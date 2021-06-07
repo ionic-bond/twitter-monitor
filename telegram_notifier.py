@@ -3,6 +3,7 @@
 import logging
 import os
 import telegram
+from telegram.error import BadRequest, RetryAfter, TimedOut, NetworkError
 
 from sleeper import Sleeper
 from utils import get_token
@@ -36,7 +37,7 @@ class TelegramNotifier:
                                       disable_web_page_preview=disable_preview,
                                       timeout=50)
             self.sleeper.sleep(normal=True)
-        except telegram.error as e:
+        except (BadRequest, RetryAfter, TimedOut, NetworkError) as e:
             logging.error('Sending message error {}, retrying...'.format(e))
             self.sleeper.sleep(normal=False)
             self.send_message(message)
