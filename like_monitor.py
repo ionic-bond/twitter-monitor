@@ -39,7 +39,7 @@ class LikeMonitor:
         while True:
             self.sleeper.sleep(normal=True)
             likes = self.get_likes()
-            for like in reversed(likes):
+            for like in reversed(likes[:-10]):
                 if like['id'] not in self.existing_like_id_set:
                     self.telegram_notifier.send_message('@{}: {}'.format(
                         like['user']['screen_name'], like['text']))
