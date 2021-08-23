@@ -6,8 +6,8 @@ Monitor the `following`, `tweet` and `like` of a Twitter user and send the chang
 
 ## List of deployed channels
 
-- 湊あくあ(minatoaqua): https://t.me/aqua_twitter_monitor
-- 潤羽るしあ(uruharushia): https://t.me/rushia_twitter_monitor
+- 湊あくあ(minatoaqua): https://t.me/minatoaqua_twitter_monitor
+- 潤羽るしあ(uruharushia): https://t.me/uruharushia_twitter_monitor
 
 (Welcome to commit new channels)
 
