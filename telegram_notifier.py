@@ -24,7 +24,7 @@ class TelegramNotifier:
         self.username = username
         self.module = module
         self.sleeper = Sleeper(1)
-        self.send_message('Init telegram bot succeed.')
+        logging.info('Init telegram bot succeed.')
 
     def send_message(self, message: str, disable_preview: bool=False):
         if not self.bot:
