@@ -16,7 +16,7 @@ from utils import send_get_request, get_user_id, get_like_id_set, init_logging
 class LikeMonitor:
 
     def __init__(self, username: str, telegram_chat_ids: str):
-        self.sleeper = Sleeper(30)
+        self.sleeper = Sleeper(48)
         self.username = username
         self.existing_like_id_set = get_like_id_set(self.get_likes())
         logging.info('Init monitor succeed.\nUsername: {}\nLike ids: {}'.format(

@@ -12,7 +12,7 @@ from utils import send_get_request, get_user_id, init_logging
 class TweetMonitor:
 
     def __init__(self, username: str, telegram_chat_ids: str):
-        self.sleeper = Sleeper(10)
+        self.sleeper = Sleeper(3)
         self.user_id = get_user_id(username)
         tweets = self.get_tweets()
         self.last_tweet_id = tweets[0]['id']
