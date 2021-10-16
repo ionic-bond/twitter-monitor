@@ -1,2 +1,4 @@
 click
 python-telegram-bot
+retry
+tzlocal==2.1

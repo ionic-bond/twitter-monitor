@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # This repo
-test.log
-test
-token.json
+log
+config/*.json
