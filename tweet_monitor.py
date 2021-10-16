@@ -1,66 +1,47 @@
 #!/usr/bin/python3
 
-import click
-from datetime import datetime, timedelta
 import logging
+from typing import List, Union
 
-from sleeper import Sleeper
 from telegram_notifier import TelegramNotifier
-from utils import send_get_request, get_user_id, init_logging
+from twitter_watcher import TwitterWatcher
 
 
 class TweetMonitor:
 
-    def __init__(self, username: str, telegram_chat_ids: str):
-        self.sleeper = Sleeper(3)
-        self.user_id = get_user_id(username)
-        tweets = self.get_tweets()
-        self.last_tweet_id = tweets[0]['id']
-        logging.info('Init monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
-            username, self.user_id, tweets[0]))
-        self.telegram_notifier = TelegramNotifier(chat_ids=telegram_chat_ids,
-                                                  username=username,
-                                                  module='Tweet')
-        self.last_log_time = datetime.now()
+    def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
+        self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
+        self.user_id = self.twitter_watcher.get_user_id(username)
+        tweet_list = self.get_tweet_list()
+        assert tweet_list
+        self.last_tweet_id = tweet_list[0]['id']
+        self.telegram_notifier = TelegramNotifier(
+            token=token_config['telegram_bot_token'],
+            chat_id_list=telegram_chat_id_list,
+            username=username,
+            module='Tweet')
+        self.logger = logging.getLogger('{}-Tweet'.format(username))
+        self.logger.info(
+            'Init tweet monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
+                username, self.user_id, tweet_list[0]))
 
-    def get_tweets(self, since_id: str = None) -> list:
+    def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
         url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
         params = {'max_results': 100}
         if since_id:
             params['since_id'] = since_id
-        json_response = send_get_request(url, params)
-        while not json_response:
-            self.sleeper.sleep(normal=False)
-            json_response = send_get_request(url, params)
-        return json_response.get('data', [])
+        json_response = self.twitter_watcher.query(url, params)
+        if json_response:
+            return json_response.get('data', [])
+        return None
 
-    def run(self):
-        while True:
-            self.sleeper.sleep(normal=True)
-            tweets = self.get_tweets(since_id=self.last_tweet_id)
-            if tweets:
-                for tweet in tweets:
-                    self.telegram_notifier.send_message(tweet['text'])
-                self.last_tweet_id = tweets[0]['id']
-            if datetime.now() - self.last_log_time > timedelta(hours=1):
-                logging.info('Last tweet id: {}'.format(self.last_tweet_id))
-                self.last_log_time = datetime.now()
+    def watch(self):
+        tweet_list = self.get_tweet_list(since_id=self.last_tweet_id)
+        if not tweet_list:
+            return
+        for tweet in tweet_list:
+            self.telegram_notifier.send_message(tweet['text'])
+        self.last_tweet_id = tweet_list[0]['id']
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.option('--username', required=True, help='Monitoring username.')
-@click.option('--log_path', default=None, help='Path to output logging\'s log.')
-@click.option('--telegram_chat_ids', required=False, help='Telegram char ids, separate by comma.')
-def run(username, log_path, telegram_chat_ids):
-    init_logging(log_path)
-    tweet_monitor = TweetMonitor(username, telegram_chat_ids)
-    tweet_monitor.run()
-
-
-if __name__ == '__main__':
-    cli()
+    def log(self):
+        self.logger.info('Last tweet id: {}'.format(self.last_tweet_id))
