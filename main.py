@@ -136,7 +136,7 @@ def run(log_dir, token_config_path, monitoring_config_path):
         scheduler.add_job(
             lambda tg_notifier, monitors: tg_notifier.send_message(_summary_status(monitors)),
             trigger='cron',
-            day='0,12',
+            day='12,24',
             args=[telegram_notifier, monitors])
 
     scheduler.start()
