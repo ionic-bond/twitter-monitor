@@ -5,6 +5,7 @@ we cannot know if the user likes a very old tweet.
 """
 
 import logging
+from datetime import datetime
 from typing import List, Union, Set
 
 from telegram_notifier import TelegramNotifier
@@ -32,6 +33,7 @@ class LikeMonitor:
         self.logger = logging.getLogger('{}-Like'.format(username))
         self.logger.info('Init like monitor succeed.\nUsername: {}\nExisting likes: {}'.format(
             self.username, self.existing_like_id_set))
+        self.last_watch_time = datetime.now()
 
     def get_like_list(self) -> Union[list, None]:
         url = 'https://api.twitter.com/1.1/favorites/list.json'
@@ -47,7 +49,8 @@ class LikeMonitor:
                 self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
                                                                      like['text']))
         self.existing_like_id_set |= _get_like_id_set(like_list)
+        self.last_watch_time = datetime.now()
 
-    def log(self):
-        self.logger.info('{} existing like id number: {}'.format(self.username,
-                                                                 len(self.existing_like_id_set)))
+    def status(self) -> str:
+        return 'Last watch time: {}, existing like number: {}'.format(
+            self.last_watch_time, len(self.existing_like_id_set))

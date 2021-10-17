@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging
+from datetime import datetime
 from typing import List, Union
 
 from telegram_notifier import TelegramNotifier
@@ -24,6 +25,7 @@ class TweetMonitor:
         self.logger.info(
             'Init tweet monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
                 username, self.user_id, tweet_list[0]))
+        self.last_watch_time = datetime.now()
 
     def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
         url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
@@ -42,6 +44,8 @@ class TweetMonitor:
         for tweet in tweet_list:
             self.telegram_notifier.send_message(tweet['text'])
         self.last_tweet_id = tweet_list[0]['id']
+        self.last_watch_time = datetime.now()
 
-    def log(self):
-        self.logger.info('Last tweet id: {}'.format(self.last_tweet_id))
+    def status(self) -> str:
+        return 'Last watch time: {}, last tweet id: {}'.format(self.last_watch_time,
+                                                               self.last_tweet_id)

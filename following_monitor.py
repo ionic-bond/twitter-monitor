@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging
+from datetime import datetime
 from typing import List, Union
 
 from telegram_notifier import TelegramNotifier
@@ -23,6 +24,7 @@ class FollowingMonitor:
         self.logger.info(
             'Init following monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.
             format(username, self.user_id, self.following_users))
+        self.last_watch_time = datetime.now()
 
     def get_all_following_users(self, user_id: str) -> Union[set, None]:
         url = 'https://api.twitter.com/2/users/{}/following'.format(user_id)
@@ -96,6 +98,8 @@ class FollowingMonitor:
             return
         self.detect_changes(self.following_users, following_users)
         self.following_users = following_users
+        self.last_watch_time = datetime.now()
 
-    def log(self):
-        self.logger.info('Number of following users: {}'.format(len(self.following_users)))
+    def status(self) -> str:
+        return 'Last watch time: {}, number of following users: {}'.format(
+            self.last_watch_time, len(self.following_users))
