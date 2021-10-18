@@ -21,7 +21,7 @@ TWEET_LIMIT = 60
 
 
 def _get_interval_second(limit_per_minute: int, token_number: int, widget: int, widget_sum: int):
-    return math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget))
+    return max(5, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
 
 
 def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
@@ -136,7 +136,7 @@ def run(log_dir, token_config_path, monitoring_config_path):
         scheduler.add_job(
             lambda tg_notifier, monitors: tg_notifier.send_message(_summary_status(monitors)),
             trigger='cron',
-            day='12,24',
+            hour='0,12',
             args=[telegram_notifier, monitors])
 
     scheduler.start()
