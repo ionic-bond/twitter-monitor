@@ -32,13 +32,15 @@ def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
     logger.addHandler(file_handler)
 
 
-def _summary_status(monitors: dict) -> str:
-    result = dict()
+def _summary_status(monitors: dict, watcher: TwitterWatcher) -> str:
+    monitor_status = dict()
     for modoule, data in monitors.items():
-        result[modoule] = {}
+        monitor_status[modoule] = {}
         for username, monitor in data.items():
-            result[modoule][username] = monitor.status()
-    return json.dumps(result, indent=4)
+            monitor_status[modoule][username] = monitor.status()
+    token_status = watcher.check_token()
+    return 'Monitor status: {}\nToken status: {}'.format(
+        json.dumps(monitor_status, indent=4), json.dumps(token_status, indent=4))
 
 
 @click.group()
@@ -132,12 +134,14 @@ def run(log_dir, token_config_path, monitoring_config_path):
         telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'],
                                              [monitoring_config['maintainer_chat_id']],
                                              'Maintainer', 'Scheduler')
-        telegram_notifier.send_message('Interval:\n{}'.format(json.dumps(intervals, indent=4)))
+        twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
+        telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
         scheduler.add_job(
-            lambda tg_notifier, monitors: tg_notifier.send_message(_summary_status(monitors)),
+            lambda tg_notifier, monitors, watcher: tg_notifier.send_message(
+                _summary_status(monitors, watcher)),
             trigger='cron',
             hour='0,12',
-            args=[telegram_notifier, monitors])
+            args=[telegram_notifier, monitors, twitter_watcher])
 
     scheduler.start()
 
