@@ -30,5 +30,3 @@ Note: Need to apply for Twitter python API token. (https://developer.twitter.com
 Twitter: [@ionicbond3](https://twitter.com/ionicbond3)
 
 Telegram: [@ionic_bond](https://t.me/ionic_bond)
-
-QQ: 353919105
