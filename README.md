@@ -6,8 +6,14 @@ Monitor the `following`, `tweet` and `like` of a Twitter user and send the chang
 
 ## List of deployed channels
 
+(Mainly hololive vtuber)
+
 - 湊あくあ(minatoaqua): https://t.me/minatoaqua_twitter_monitor
 - 潤羽るしあ(uruharushia): https://t.me/uruharushia_twitter_monitor
+- 兎田ぺこら(usadapekora): https://t.me/usadapekora_twitter_monitor
+- 姫森ルーナ(himemoriluna): https://t.me/himemoriluna_twitter_monitor
+- さくらみこ(sakuramiko35): https://t.me/sakuramiko_twitter_monitor
+- 紫咲シオン(murasakishionch): https://t.me/murasakishion_twitter_monitor
 
 (Welcome to commit new channels)
 
