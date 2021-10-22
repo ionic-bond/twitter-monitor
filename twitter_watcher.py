@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging
+import random
 import requests
 from typing import List, Union
 
@@ -14,7 +15,7 @@ class TwitterWatcher:
     def __init__(self, bearer_token_list: List[str]):
         assert bearer_token_list
         self.bearer_token_list = bearer_token_list
-        self.current_token_index = 0
+        self.current_token_index = random.randrange(len(bearer_token_list))
         self.logger = logging.getLogger('twitter')
 
     def query(self, url: str, params: dict) -> Union[dict, list, None]:
