@@ -21,7 +21,7 @@ class LikeMonitor:
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.username = username
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        like_list = self.get_like_list()
+        like_list = None
         while not like_list:
             like_list = self.get_like_list()
         self.existing_like_id_set = _get_like_id_set(like_list)

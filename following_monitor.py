@@ -14,7 +14,9 @@ class FollowingMonitor:
         self.username = username
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_user_id(username)
-        self.following_users = self.get_all_following_users(self.user_id)
+        self.following_users = None
+        while not self.following_users:
+            self.following_users = self.get_all_following_users(self.user_id)
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
             chat_id_list=telegram_chat_id_list,
