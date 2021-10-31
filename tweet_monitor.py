@@ -40,11 +40,12 @@ class TweetMonitor:
 
     def watch(self):
         tweet_list = self.get_tweet_list(since_id=self.last_tweet_id)
-        if not tweet_list:
+        if tweet_list is None:
             return
         for tweet in tweet_list:
             self.telegram_notifier.send_message(tweet['text'])
-        self.last_tweet_id = tweet_list[0]['id']
+        if tweet_list:
+            self.last_tweet_id = tweet_list[0]['id']
         self.last_watch_time = datetime.now()
 
     def status(self) -> str:
