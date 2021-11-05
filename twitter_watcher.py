@@ -29,8 +29,9 @@ class TwitterWatcher:
                 continue
             if response.status_code == 200:
                 return response.json()
-            self.logger.error('Request returned an error: {} {}, try next token.'.format(
-                response.status_code, response.text))
+            if response.status_code != 429:
+                self.logger.error('Request returned an error: {} {}, try next token.'.format(
+                    response.status_code, response.text))
         self.logger.error('All tokens are unavailable, query fails.')
         return None
 

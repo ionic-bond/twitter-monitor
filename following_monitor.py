@@ -68,7 +68,8 @@ class FollowingMonitor:
         if public_metrics.get('following_count', 2000) < 2000:
             following_users = self.get_all_following_users(
                 self.twitter_watcher.get_user_id(username))
-            details_str += '\nFollow each other: {}'.format(self.username in following_users)
+            if following_users:
+                details_str += '\nFollow each other: {}'.format(self.username in following_users)
         return details_str
 
     def detect_changes(self, old_following_users: set, new_following_users: set):
