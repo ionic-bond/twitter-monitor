@@ -22,12 +22,10 @@ class TelegramNotifier:
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
     def _send_message_to_single_chat(self, chat_id: str, message: str, disable_preview: bool):
-        self.bot.send_message(chat_id=chat_id,
-                              text=message,
-                              disable_web_page_preview=disable_preview,
-                              timeout=60)
+        self.bot.send_message(
+            chat_id=chat_id, text=message, disable_web_page_preview=disable_preview, timeout=60)
 
-    def send_message(self, message: str, disable_preview: bool=False):
+    def send_message(self, message: str, disable_preview: bool = False):
         message = '[{}][{}] {}'.format(self.username, self.module, message)
         self.logger.info('Sending message: {}'.format(message))
         for chat_id in self.chat_id_list:
