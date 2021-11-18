@@ -1,5 +1,6 @@
 {
     "maintainer_chat_id": "",
+    "weight_sum_offset": 0,
     "monitoring_user_list": [
         {
             "username": "Twitter",

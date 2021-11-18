@@ -70,9 +70,10 @@ def run(log_dir, token_config_path, monitoring_config_path):
         monitoring_config = json.load(monitoring_config_file)
         assert monitoring_config['monitoring_user_list']
 
-    following_weight_sum = 0
-    like_weight_sum = 0
-    tweet_weight_sum = 0
+    weight_sum_offset = monitoring_config.get('weight_sum_offset', 0)
+    following_weight_sum = weight_sum_offset
+    like_weight_sum = weight_sum_offset
+    tweet_weight_sum = weight_sum_offset
     for monitoring_user in monitoring_config['monitoring_user_list']:
         if monitoring_user.get('monitoring_following', False):
             following_weight_sum += monitoring_user['weight']
