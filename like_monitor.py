@@ -22,7 +22,7 @@ class LikeMonitor:
         self.username = username
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         like_list = None
-        while not like_list:
+        while like_list is None:
             like_list = self.get_like_list()
         self.existing_like_id_set = _get_like_id_set(like_list)
         self.telegram_notifier = TelegramNotifier(

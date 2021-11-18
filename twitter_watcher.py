@@ -37,8 +37,8 @@ class TwitterWatcher:
 
     def get_user_id(self, username: str) -> str:
         url = 'https://api.twitter.com/2/users/by/username/{}'.format(username)
-        user = self.query(url, {})
-        while not user:
+        user = None
+        while user is None:
             user = self.query(url, {})
         return user['data']['id']
 

@@ -15,7 +15,7 @@ class FollowingMonitor:
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_user_id(username)
         self.following_users = None
-        while not self.following_users:
+        while self.following_users is None:
             self.following_users = self.get_all_following_users(self.user_id)
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
@@ -66,10 +66,10 @@ class FollowingMonitor:
         details_str += '\nFollowers: {}'.format(public_metrics.get('followers_count', -1))
         details_str += '\nTweets: {}'.format(public_metrics.get('tweet_count', -1))
         if public_metrics.get('following_count', 2000) < 2000:
-            following_users = self.get_all_following_users(
-                self.twitter_watcher.get_user_id(username))
-            if following_users:
-                details_str += '\nFollow each other: {}'.format(self.username in following_users)
+            following_users = None
+            while following_users is None:
+                following_users = self.get_all_following_users(self.twitter_watcher.get_user_id(username))
+            details_str += '\nFollow each other: {}'.format(self.username in following_users)
         return details_str
 
     def detect_changes(self, old_following_users: set, new_following_users: set):
