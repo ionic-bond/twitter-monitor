@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import List, Union
+from typing import List, Union, Tuple
 
 from telegram_notifier import TelegramNotifier
 from twitter_watcher import TwitterWatcher
@@ -45,16 +45,12 @@ class FollowingMonitor:
             next_token = json_response['meta'].get('next_token', '')
         return set(result['username'] for result in results)
 
-    def get_user_details(self, username: str) -> Union[str, None]:
-        url = 'https://api.twitter.com/2/users/by/username/{}'.format(username)
-        params = {'user.fields': 'name,description,url,created_at,public_metrics'}
-        json_response = self.twitter_watcher.query(url, params)
-        if not json_response:
-            return None
-        errors = json_response.get('errors', None)
-        if errors:
-            return '\n'.join([error['detail'] for error in errors])
-        data = json_response['data']
+    def get_user_details(self, username: str) -> Tuple[str, str]:
+        params = {'user.fields': 'name,description,url,created_at,public_metrics,profile_image_url'}
+        user = self.twitter_watcher.get_user_by_username(username, params)
+        if user.get('errors', None):
+            return '\n'.join([error['detail'] for error in user['errors']])
+        data = user['data']
         details_str = 'Name: {}'.format(data.get('name', ''))
         details_str += '\nBio: {}'.format(data.get('description', ''))
         website = data.get('url', '')
@@ -68,9 +64,10 @@ class FollowingMonitor:
         if public_metrics.get('following_count', 2000) < 2000:
             following_users = None
             while following_users is None:
-                following_users = self.get_all_following_users(self.twitter_watcher.get_id_by_username(username, {}))
+                following_users = self.get_all_following_users(
+                    self.twitter_watcher.get_id_by_username(username, {}))
             details_str += '\nFollow each other: {}'.format(self.username in following_users)
-        return details_str
+        return details_str, data.get('profile_image_url', '')
 
     def detect_changes(self, old_following_users: set, new_following_users: set):
         if old_following_users == new_following_users:
@@ -83,17 +80,19 @@ class FollowingMonitor:
         if dec_users:
             for dec_user in dec_users:
                 message = 'Unfollow: @{}'.format(dec_user)
-                details_str = self.get_user_details(dec_user)
+                details_str, profile_image_url = self.get_user_details(dec_user)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.telegram_notifier.send_message(message, disable_preview=True)
+                self.telegram_notifier.send_message(
+                    message=message, photo_url=profile_image_url, disable_preview=True)
         if inc_users:
             for inc_user in inc_users:
                 message = 'Follow: @{}'.format(inc_user)
                 details_str = self.get_user_details(inc_user)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.telegram_notifier.send_message(message, disable_preview=True)
+                self.telegram_notifier.send_message(
+                    message=message, photo_url=profile_image_url, disable_preview=True)
 
     def watch(self):
         following_users = self.get_all_following_users(self.user_id)
