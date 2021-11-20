@@ -13,7 +13,7 @@ class FollowingMonitor:
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.username = username
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_user_id(username)
+        self.user_id = self.twitter_watcher.get_id_by_username(username, {})
         self.following_users = None
         while self.following_users is None:
             self.following_users = self.get_all_following_users(self.user_id)
@@ -68,7 +68,7 @@ class FollowingMonitor:
         if public_metrics.get('following_count', 2000) < 2000:
             following_users = None
             while following_users is None:
-                following_users = self.get_all_following_users(self.twitter_watcher.get_user_id(username))
+                following_users = self.get_all_following_users(self.twitter_watcher.get_id_by_username(username, {}))
             details_str += '\nFollow each other: {}'.format(self.username in following_users)
         return details_str
 

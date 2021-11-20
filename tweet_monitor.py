@@ -12,7 +12,7 @@ class TweetMonitor:
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_user_id(username)
+        self.user_id = self.twitter_watcher.get_id_by_username(username, {})
         tweet_list = None
         while tweet_list is None:
             tweet_list = self.get_tweet_list()
