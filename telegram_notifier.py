@@ -24,18 +24,13 @@ class TelegramNotifier:
     def _send_message_to_single_chat(self, chat_id: str, message: str, photo_url: str,
                                      disable_preview: bool):
         if photo_url:
-            self.bot.send_photo(
-                chat_id=chat_id,
-                photo=photo_url,
-                caption=message,
-                disable_web_page_preview=disable_preview,
-                timeout=60)
+            self.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=message, timeout=60)
         else:
             self.bot.send_message(
                 chat_id=chat_id, text=message, disable_web_page_preview=disable_preview, timeout=60)
 
     def send_message(self, message: str, photo_url: str = '', disable_preview: bool = False):
         message = '[{}][{}] {}'.format(self.username, self.module, message)
-        self.logger.info('Sending message: {}'.format(message))
+        self.logger.info('Sending message: {}\nphoto: {}'.format(message, photo_url))
         for chat_id in self.chat_id_list:
             self._send_message_to_single_chat(chat_id, message, photo_url, disable_preview)

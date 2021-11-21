@@ -12,7 +12,7 @@ class FollowingMonitor:
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_id_by_username(username, {})
+        self.user_id = self.twitter_watcher.get_id_by_username(username)
         self.following_dict = None
         while self.following_dict is None:
             self.following_dict = self.get_all_following(self.user_id)
@@ -69,7 +69,7 @@ class FollowingMonitor:
             while following_dict is None:
                 following_dict = self.get_all_following(user_id)
             details_str += '\nFollow each other: {}'.format(self.user_id in following_dict.keys())
-        return details_str, data.get('profile_image_url', '')
+        return details_str, data.get('profile_image_url', '').replace('_normal', '')
 
     def detect_changes(self, old_following_dict: set, new_following_dict: set):
         if old_following_dict.keys() == new_following_dict.keys():
