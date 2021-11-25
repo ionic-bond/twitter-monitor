@@ -14,6 +14,8 @@ Monitor the `following`, `tweet` and `like` of a Twitter user and send the chang
 - 姫森ルーナ(himemoriluna): https://t.me/himemoriluna_twitter_monitor
 - さくらみこ(sakuramiko35): https://t.me/sakuramiko_twitter_monitor
 - 紫咲シオン(murasakishionch): https://t.me/murasakishion_twitter_monitor
+- Gawr Gura(gawrgura): https://t.me/gawrgura_twitter_monitor
+- 宝鐘マリン(houshoumarine): https://t.me/houshoumarine_twitter_monitor
 
 (Welcome to commit new channels)
 
