@@ -136,8 +136,8 @@ def run(log_dir, token_config_path, monitoring_config_path):
                                              [monitoring_config['maintainer_chat_id']],
                                              'Maintainer', 'Scheduler')
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        telegram_notifier.send_message('Interval: {}\n{}'.format(
-            json.dumps(intervals, indent=4), _summary_status(monitors, twitter_watcher)))
+        telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
+        telegram_notifier.send_message(_summary_status(monitors, twitter_watcher))
         scheduler.add_job(
             lambda tg_notifier, monitors, watcher: tg_notifier.send_message(
                 _summary_status(monitors, watcher)),
