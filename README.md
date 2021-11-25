@@ -1,4 +1,4 @@
-# Twitter User Monitor
+# Twitter Monitor
 
 Monitor the `following`, `tweet` and `like` of a Twitter user and send the changes to the telegram channel.
 
