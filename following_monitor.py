@@ -105,5 +105,5 @@ class FollowingMonitor:
         self.last_watch_time = datetime.now()
 
     def status(self) -> str:
-        return 'Last watch time: {}, number of following users: {}'.format(
+        return 'Last: {}, number: {}'.format(
             self.last_watch_time, len(self.following_dict))
