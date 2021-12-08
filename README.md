@@ -20,7 +20,7 @@ Monitor the `following`, `tweet` and `like` of a Twitter user and send the chang
 
 (Welcome to commit new channels)
 
-## How to deloy
+## How to deploy
 
 I'll write this when I have time.
 
