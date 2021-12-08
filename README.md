@@ -16,6 +16,7 @@ Monitor the `following`, `tweet` and `like` of a Twitter user and send the chang
 - 紫咲シオン(murasakishionch): https://t.me/murasakishion_twitter_monitor
 - Gawr Gura(gawrgura): https://t.me/gawrgura_twitter_monitor
 - 宝鐘マリン(houshoumarine): https://t.me/houshoumarine_twitter_monitor
+- 沙花叉クロヱ(sakamatachloe): https://t.me/sakamatachloe_twitter_monitor
 
 (Welcome to commit new channels)
 
