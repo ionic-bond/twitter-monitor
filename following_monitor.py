@@ -52,7 +52,7 @@ class FollowingMonitor:
         params = {'user.fields': 'name,description,url,created_at,public_metrics,profile_image_url'}
         user = self.twitter_watcher.get_user_by_id(user_id, params)
         if user.get('errors', None):
-            return '\n'.join([error['detail'] for error in user['errors']])
+            return '\n'.join([error['detail'] for error in user['errors']]), ''
         data = user['data']
         details_str = 'Name: {}'.format(data.get('name', ''))
         details_str += '\nBio: {}'.format(data.get('description', ''))
