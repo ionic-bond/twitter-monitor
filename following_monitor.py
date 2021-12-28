@@ -34,7 +34,7 @@ class FollowingMonitor:
         json_response = self.twitter_watcher.query(url, params)
         if not json_response:
             return None
-        users = json_response['data']
+        users = json_response.get('data', [])
         next_token = json_response['meta'].get('next_token', '')
         while next_token:
             params['pagination_token'] = next_token
@@ -80,6 +80,7 @@ class FollowingMonitor:
         if len(dec_user_ids) > max_changes or len(inc_user_ids) > max_changes:
             return
         if dec_user_ids:
+            self.logger.info('Unfollow: {}'.format(dec_user_ids))
             for dec_user_id in dec_user_ids:
                 message = 'Unfollow: @{}'.format(old_following_dict[dec_user_id]['username'])
                 details_str, profile_image_url = self.get_user_details(dec_user_id)
@@ -88,6 +89,7 @@ class FollowingMonitor:
                 self.telegram_notifier.send_message(
                     message=message, photo_url=profile_image_url, disable_preview=True)
         if inc_user_ids:
+            self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
                 message = 'Follow: @{}'.format(new_following_dict[inc_user_id]['username'])
                 details_str, profile_image_url = self.get_user_details(inc_user_id)
