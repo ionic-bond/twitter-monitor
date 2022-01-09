@@ -142,7 +142,7 @@ def run(log_dir, token_config_path, monitoring_config_path):
             lambda tg_notifier, monitors, watcher: tg_notifier.send_message(
                 _summary_status(monitors, watcher)),
             trigger='cron',
-            hour='0,12',
+            hour='4,16',
             args=[telegram_notifier, monitors, twitter_watcher])
 
     scheduler.start()

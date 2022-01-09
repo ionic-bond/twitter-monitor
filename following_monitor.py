@@ -35,14 +35,14 @@ class FollowingMonitor:
         if not json_response:
             return None
         users = json_response.get('data', [])
-        next_token = json_response['meta'].get('next_token', '')
+        next_token = json_response.get('meta', {}).get('next_token', '')
         while next_token:
             params['pagination_token'] = next_token
             json_response = self.twitter_watcher.query(url, params)
             if not json_response:
                 return None
-            users.extend(json_response['data'])
-            next_token = json_response['meta'].get('next_token', '')
+            users.extend(json_response.get('data', []))
+            next_token = json_response.get('meta', {}).get('next_token', '')
         result = dict()
         for user in users:
             result[user['id']] = user
