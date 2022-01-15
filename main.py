@@ -7,6 +7,7 @@ import os
 import sys
 
 import click
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BlockingScheduler
 
 from following_monitor import FollowingMonitor
@@ -32,15 +33,15 @@ def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
     logger.addHandler(file_handler)
 
 
-def _summary_status(monitors: dict, watcher: TwitterWatcher) -> str:
+def _send_summary(notifier: TelegramNotifier, monitors: dict, watcher: TwitterWatcher) -> str:
     monitor_status = dict()
     for modoule, data in monitors.items():
         monitor_status[modoule] = {}
         for username, monitor in data.items():
             monitor_status[modoule][username] = monitor.status()
+    notifier.send_message('Monitor status: {}'.format(json.dumps(monitor_status, indent=4)))
     token_status = watcher.check_token()
-    return 'Monitor status: {}\nToken status: {}'.format(
-        json.dumps(monitor_status, indent=4), json.dumps(token_status, indent=4))
+    notifier.send_message('Token status: {}'.format(json.dumps(token_status, indent=4)))
 
 
 @click.group()
@@ -93,7 +94,10 @@ def run(log_dir, token_config_path, monitoring_config_path):
         'like': {},
         'tweet': {},
     }
-    scheduler = BlockingScheduler()
+    executors = {
+        'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)
+    }
+    scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         username = monitoring_user['username']
         telegram_chat_id_list = monitoring_user['telegram_chat_id_list']
@@ -137,10 +141,9 @@ def run(log_dir, token_config_path, monitoring_config_path):
                                              'Maintainer', 'Scheduler')
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
-        telegram_notifier.send_message(_summary_status(monitors, twitter_watcher))
+        _send_summary(telegram_notifier, monitors, twitter_watcher)
         scheduler.add_job(
-            lambda tg_notifier, monitors, watcher: tg_notifier.send_message(
-                _summary_status(monitors, watcher)),
+            _send_summary,
             trigger='cron',
             hour='4,16',
             args=[telegram_notifier, monitors, twitter_watcher])
