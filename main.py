@@ -22,7 +22,7 @@ TWEET_LIMIT = 60
 
 
 def _get_interval_second(limit_per_minute: int, token_number: int, widget: int, widget_sum: int):
-    return max(5, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
+    return max(10, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
 
 
 def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
@@ -54,7 +54,8 @@ def cli():
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option(
     '--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
-def run(log_dir, token_config_path, monitoring_config_path):
+@click.option('--confirm/--no-confirm', default=False, help="Confirm with the maintainer during initialization")
+def run(log_dir, token_config_path, monitoring_config_path, confirm):
     os.makedirs(log_dir, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_dir, 'main'),
@@ -142,6 +143,11 @@ def run(log_dir, token_config_path, monitoring_config_path):
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
         _send_summary(telegram_notifier, monitors, twitter_watcher)
+        if confirm:
+            if not telegram_notifier.confirm('Please confirm the initialization information'):
+                telegram_notifier.send_message('Monitor will exit now.')
+                raise RuntimeError('Initialization information confirm error')
+            telegram_notifier.send_message('Monitor initialization succeeded.')
         scheduler.add_job(
             _send_summary,
             trigger='cron',
