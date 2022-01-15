@@ -50,24 +50,19 @@ class TelegramNotifier:
     def confirm(self, message: str) -> bool:
         updates = self._get_updates()
         update_offset = self._get_new_update_offset(updates)
-        print(update_offset)
         message = '{}\nPlease reply Y/N'.format(message)
         self.send_message(message)
         sending_time = datetime.utcnow().replace(tzinfo=timezone.utc)
         while True:
             updates = self._get_updates(offset=update_offset)
             update_offset = self._get_new_update_offset(updates)
-            print(update_offset)
             for update in updates:
                 message = update.message
-                print(message.date)
                 if message.date < sending_time:
                     continue
-                print(message.chat.id)
                 if message.chat.id not in self.chat_id_list:
                     continue
                 text = message.text.upper()
-                print(text)
                 if text == 'Y':
                     return True
                 if text == 'N':
