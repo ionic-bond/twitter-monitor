@@ -25,6 +25,8 @@ class LikeMonitor:
         while like_list is None:
             like_list = self.get_like_list()
         self.existing_like_id_set = _get_like_id_set(like_list)
+        self.min_like_id = min(self.existing_like_id_set)
+        print(type(self.min_like_id))
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
             chat_id_list=telegram_chat_id_list,
@@ -44,8 +46,10 @@ class LikeMonitor:
         like_list = self.get_like_list()
         if not like_list:
             return
-        for like in reversed(like_list[:-20]):
+        for like in reversed(like_list):
             if like['id'] not in self.existing_like_id_set:
+                print(like['id'], self.min_like_id)
+            if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
                                                                      like['text']))
         self.existing_like_id_set |= _get_like_id_set(like_list)
