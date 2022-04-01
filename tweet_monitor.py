@@ -49,5 +49,4 @@ class TweetMonitor:
         self.last_watch_time = datetime.now()
 
     def status(self) -> str:
-        return 'Last: {}, id: {}'.format(self.last_watch_time,
-                                                               self.last_tweet_id)
+        return 'Last: {}, id: {}'.format(self.last_watch_time, self.last_tweet_id)

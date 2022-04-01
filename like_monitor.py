@@ -52,5 +52,4 @@ class LikeMonitor:
         self.last_watch_time = datetime.now()
 
     def status(self) -> str:
-        return 'Last: {}, number: {}'.format(
-            self.last_watch_time, len(self.existing_like_id_set))
+        return 'Last: {}, number: {}'.format(self.last_watch_time, len(self.existing_like_id_set))

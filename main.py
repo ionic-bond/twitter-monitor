@@ -54,7 +54,10 @@ def cli():
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option(
     '--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
-@click.option('--confirm/--no-confirm', default=False, help="Confirm with the maintainer during initialization")
+@click.option(
+    '--confirm/--no-confirm',
+    default=False,
+    help="Confirm with the maintainer during initialization")
 def run(log_dir, token_config_path, monitoring_config_path, confirm):
     os.makedirs(log_dir, exist_ok=True)
     logging.basicConfig(
@@ -95,9 +98,7 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
         'like': {},
         'tweet': {},
     }
-    executors = {
-        'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)
-    }
+    executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)}
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         username = monitoring_user['username']
