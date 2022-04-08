@@ -16,7 +16,7 @@ class TweetMonitor:
         tweet_list = None
         while tweet_list is None:
             tweet_list = self.get_tweet_list()
-        self.last_tweet_id = tweet_list[0]['id']
+        self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
             chat_id_list=telegram_chat_id_list,
