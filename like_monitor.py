@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 from typing import List, Union, Set
 
+from monitor_base import MonitorBase
 from telegram_notifier import TelegramNotifier
 from twitter_watcher import TwitterWatcher
 
@@ -16,7 +17,7 @@ def _get_like_id_set(like_list: list) -> Set[str]:
     return set(like['id'] for like in like_list)
 
 
-class LikeMonitor:
+class LikeMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.username = username

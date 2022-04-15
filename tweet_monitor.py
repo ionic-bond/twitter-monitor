@@ -4,11 +4,12 @@ import logging
 from datetime import datetime
 from typing import List, Union
 
+from monitor_base import MonitorBase
 from telegram_notifier import TelegramNotifier
 from twitter_watcher import TwitterWatcher
 
 
-class TweetMonitor:
+class TweetMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
