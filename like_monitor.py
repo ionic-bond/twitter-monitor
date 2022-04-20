@@ -20,8 +20,8 @@ def _get_like_id_set(like_list: list) -> Set[str]:
 class LikeMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
-        self.username = username
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
+        self.user_id = self.twitter_watcher.get_id_by_username(username)
 
         like_list = None
         while like_list is None:
@@ -35,13 +35,13 @@ class LikeMonitor(MonitorBase):
             username=username,
             module='Like')
         self.logger = logging.getLogger('{}-Like'.format(username))
-        self.logger.info('Init like monitor succeed.\nUsername: {}\nExisting likes: {}'.format(
-            self.username, self.existing_like_id_set))
+        self.logger.info('Init like monitor succeed.\nUser id: {}\nExisting likes: {}'.format(
+            self.user_id, self.existing_like_id_set))
         self.last_watch_time = datetime.now()
 
     def get_like_list(self) -> Union[list, None]:
         url = 'https://api.twitter.com/1.1/favorites/list.json'
-        params = {'screen_name': self.username, 'count': 200}
+        params = {'user_id': self.user_id, 'count': 200}
         return self.twitter_watcher.query(url, params)
 
     def watch(self):

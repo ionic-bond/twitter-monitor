@@ -25,10 +25,8 @@ class FollowingMonitor(MonitorBase):
             username=username,
             module='Following')
         self.logger = logging.getLogger('{}-Following'.format(username))
-        self.logger.info(
-            'Init following monitor succeed.\nUsername: {}\nUser id: {}\nFollowing users: {}'.
-            format(username, self.user_id,
-                   [user['username'] for user in self.following_dict.values()]))
+        self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing users: {}'.format(
+            self.user_id, [user['username'] for user in self.following_dict.values()]))
         self.last_watch_time = datetime.now()
 
     def get_all_following(self, user_id: str) -> Union[Dict[str, dict], None]:

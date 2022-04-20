@@ -26,9 +26,8 @@ class TweetMonitor(MonitorBase):
             username=username,
             module='Tweet')
         self.logger = logging.getLogger('{}-Tweet'.format(username))
-        self.logger.info(
-            'Init tweet monitor succeed.\nUsername: {}\nUser id: {}\nLast tweet: {}'.format(
-                username, self.user_id, tweet_list[0]))
+        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(
+            self.user_id, tweet_list[0]))
         self.last_watch_time = datetime.now()
 
     def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
