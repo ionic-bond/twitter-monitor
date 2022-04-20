@@ -56,7 +56,7 @@ class ProfileParser():
 
     @cached_property
     def profile_image_url(self) -> str:
-        return self.user.get('profile_image_url', '')
+        return self.user.get('profile_image_url', '').replace('_normal', '')
 
     @cached_property
     def profile_banner_url(self) -> str:
@@ -95,6 +95,7 @@ class ProfileMonitor(MonitorBase):
         self.last_watch_time = datetime.now()
 
     def get_user(self) -> Union[dict, None]:
+        # Use v1 API because v2 API doesn't provide like_count.
         url = 'https://api.twitter.com/1.1/users/show.json'
         params = {'user_id': self.user_id}
         user = self.twitter_watcher.query(url, params)
@@ -148,12 +149,14 @@ class ProfileMonitor(MonitorBase):
             self.telegram_notifier.send_message(
                 message=MESSAGE_TEMPLATE.format('Profile image', self.profile_image_url,
                                                 parser.profile_image_url),
+                photo_url_list=[self.profile_image_url, parser.profile_image_url],
                 disable_preview=True)
             self.profile_image_url = parser.profile_image_url
         if self.profile_banner_url != parser.profile_banner_url:
             self.telegram_notifier.send_message(
                 message=MESSAGE_TEMPLATE.format('Profile banner', self.profile_banner_url,
                                                 parser.profile_banner_url),
+                photo_url_list=[self.profile_banner_url, parser.profile_banner_url],
                 disable_preview=True)
             self.profile_banner_url = parser.profile_banner_url
 

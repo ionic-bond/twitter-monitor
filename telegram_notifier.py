@@ -23,19 +23,31 @@ class TelegramNotifier:
         self.logger.info('Init telegram bot [{}][{}] succeed.'.format(username, module))
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
-    def _send_message_to_single_chat(self, chat_id: str, message: str, photo_url: str,
-                                     disable_preview: bool):
-        if photo_url:
-            self.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=message, timeout=60)
+    def _send_message_to_single_chat(self, chat_id: str, message: str,
+                                     photo_url_list: Union[List[str], None], disable_preview: bool):
+        if photo_url_list:
+            if len(photo_url_list) == 1:
+                self.bot.send_photo(
+                    chat_id=chat_id, photo=photo_url_list[0], caption=message, timeout=60)
+            else:
+                media_group = [telegram.InputMediaPhoto(media=photo_url_list[0], caption=message)]
+                for photo_url in photo_url_list[1:10]:
+                    media_group.append(telegram.InputMediaPhoto(media=photo_url))
+                self.bot.send_media_group(chat_id=chat_id, media=media_group, timeout=60)
         else:
             self.bot.send_message(
                 chat_id=chat_id, text=message, disable_web_page_preview=disable_preview, timeout=60)
 
-    def send_message(self, message: str, photo_url: str = '', disable_preview: bool = False):
+    def send_message(self,
+                     message: str,
+                     photo_url_list: Union[List[str], None] = None,
+                     disable_preview: bool = False):
         message = '[{}][{}] {}'.format(self.username, self.module, message)
-        self.logger.info('Sending message: {}\nphoto: {}'.format(message, photo_url))
+        self.logger.info('Sending message: {}\n'.format(message))
+        if photo_url_list:
+            self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         for chat_id in self.chat_id_list:
-            self._send_message_to_single_chat(chat_id, message, photo_url, disable_preview)
+            self._send_message_to_single_chat(chat_id, message, photo_url_list, disable_preview)
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
     def _get_updates(self, offset=None) -> List[telegram.Update]:
