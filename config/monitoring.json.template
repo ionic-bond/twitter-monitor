@@ -6,6 +6,7 @@
             "username": "Twitter",
             "telegram_chat_id_list": [1034977773],
             "weight": 2,
+            "monitoring_profile": true,
             "monitoring_following": true,
             "monitoring_like": true,
             "monitoring_tweet": true
@@ -14,6 +15,7 @@
             "username": "TwitterDev",
             "telegram_chat_id_list": [1034977773],
             "weight": 1,
+            "monitoring_profile": true,
             "monitoring_following": false,
             "monitoring_like": false,
             "monitoring_tweet": true
