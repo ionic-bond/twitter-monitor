@@ -14,10 +14,12 @@ class TweetMonitor(MonitorBase):
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_id_by_username(username)
+
         tweet_list = None
         while tweet_list is None:
             tweet_list = self.get_tweet_list()
         self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
+
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
             chat_id_list=telegram_chat_id_list,

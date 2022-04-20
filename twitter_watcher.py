@@ -35,14 +35,14 @@ class TwitterWatcher:
         self.logger.error('All tokens are unavailable, query fails.')
         return None
 
-    def get_user_by_username(self, username: str, params: dict) -> str:
+    def get_user_by_username(self, username: str, params: dict) -> dict:
         url = 'https://api.twitter.com/2/users/by/username/{}'.format(username)
         user = None
         while user is None:
             user = self.query(url, params)
         return user
 
-    def get_user_by_id(self, id: str, params: dict) -> str:
+    def get_user_by_id(self, id: str, params: dict) -> dict:
         url = 'https://api.twitter.com/2/users/{}'.format(id)
         user = None
         while user is None:

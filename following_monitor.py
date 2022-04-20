@@ -14,9 +14,11 @@ class FollowingMonitor(MonitorBase):
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_id_by_username(username)
+
         self.following_dict = None
         while self.following_dict is None:
             self.following_dict = self.get_all_following(self.user_id)
+
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
             chat_id_list=telegram_chat_id_list,

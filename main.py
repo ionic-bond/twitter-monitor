@@ -12,10 +12,12 @@ from apscheduler.schedulers.background import BlockingScheduler
 
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
+from profile_monitor import ProfileMonitor
 from telegram_notifier import TelegramNotifier
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
 
+PROFILE_LIMIT = 60
 FOLLOWING_LIMIT = 1
 LIKE_LIMIT = 5
 TWEET_LIMIT = 60
@@ -76,10 +78,13 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
         assert monitoring_config['monitoring_user_list']
 
     weight_sum_offset = monitoring_config.get('weight_sum_offset', 0)
+    profile_weight_sum = weight_sum_offset
     following_weight_sum = weight_sum_offset
     like_weight_sum = weight_sum_offset
     tweet_weight_sum = weight_sum_offset
     for monitoring_user in monitoring_config['monitoring_user_list']:
+        if monitoring_user.get('monitoring_profile', False):
+            profile_weight_sum += monitoring_user['weight']
         if monitoring_user.get('monitoring_following', False):
             following_weight_sum += monitoring_user['weight']
         if monitoring_user.get('monitoring_like', False):
@@ -89,11 +94,13 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
 
     token_number = len(token_config['twitter_bearer_token_list'])
     monitors = {
+        'profile': {},
         'following': {},
         'like': {},
         'tweet': {},
     }
     intervals = {
+        'profile': {},
         'following': {},
         'like': {},
         'tweet': {},
@@ -104,6 +111,17 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
         username = monitoring_user['username']
         telegram_chat_id_list = monitoring_user['telegram_chat_id_list']
         weight = monitoring_user['weight']
+        if monitoring_user.get('monitoring_profile', False):
+            logger_name = '{}-Profile'.format(username)
+            _setup_logger(logger_name, os.path.join(log_dir, logger_name))
+            intervals['profile'][username] = _get_interval_second(PROFILE_LIMIT, token_number,
+                                                                  weight, profile_weight_sum)
+            monitors['profile'][username] = ProfileMonitor(token_config, username,
+                                                           telegram_chat_id_list)
+            scheduler.add_job(
+                monitors['profile'][username].watch,
+                trigger='interval',
+                seconds=intervals['profile'][username])
         if monitoring_user.get('monitoring_following', False):
             logger_name = '{}-Following'.format(username)
             _setup_logger(logger_name, os.path.join(log_dir, logger_name))
