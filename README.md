@@ -51,6 +51,6 @@ Note: Need to apply for Twitter python API token. (https://developer.twitter.com
 
 ## Contact me
 
-Twitter: [@ionicbond3](https://twitter.com/ionicbond3)
+Twitter: [@ion_desu](https://twitter.com/ion_desu)
 
 Telegram: [@ionic_bond](https://t.me/ionic_bond)
