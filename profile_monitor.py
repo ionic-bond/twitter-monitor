@@ -107,28 +107,22 @@ class ProfileMonitor(MonitorBase):
     def detect_change_and_update(self, user: dict):
         parser = ProfileParser(user)
         if self.name != parser.name:
-            self.telegram_notifier.send_message(
-                message=MESSAGE_TEMPLATE.format('Name', self.name, parser.name),
-                disable_preview=True)
+            self.logger.info(message=MESSAGE_TEMPLATE.format('Name', self.name, parser.name))
             self.name = parser.name
         if self.username != parser.username:
-            self.telegram_notifier.send_message(
-                message=MESSAGE_TEMPLATE.format('Username', self.username, parser.username),
-                disable_preview=True)
+            self.logger.info(
+                message=MESSAGE_TEMPLATE.format('Username', self.username, parser.username))
             self.username = parser.username
         if self.location != parser.location:
-            self.telegram_notifier.send_message(
-                message=MESSAGE_TEMPLATE.format('Location', self.location, parser.location),
-                disable_preview=True)
+            self.logger.info(
+                message=MESSAGE_TEMPLATE.format('Location', self.location, parser.location))
             self.location = parser.location
         if self.bio != parser.bio:
-            self.telegram_notifier.send_message(
-                message=MESSAGE_TEMPLATE.format('Bio', self.bio, parser.bio), disable_preview=True)
+            self.logger.info(message=MESSAGE_TEMPLATE.format('Bio', self.bio, parser.bio))
             self.bio = parser.bio
         if self.website != parser.website:
-            self.telegram_notifier.send_message(
-                message=MESSAGE_TEMPLATE.format('Website', self.website, parser.website),
-                disable_preview=True)
+            self.logger.info(
+                message=MESSAGE_TEMPLATE.format('Website', self.website, parser.website))
             self.website = parser.website
         if self.followers_count != parser.followers_count:
             self.followers_count = parser.followers_count
@@ -146,18 +140,14 @@ class ProfileMonitor(MonitorBase):
                 MESSAGE_TEMPLATE.format('Tweet count', self.tweet_count, parser.tweet_count))
             self.tweet_count = parser.tweet_count
         if self.profile_image_url != parser.profile_image_url:
-            self.telegram_notifier.send_message(
+            self.logger.info(
                 message=MESSAGE_TEMPLATE.format('Profile image', self.profile_image_url,
-                                                parser.profile_image_url),
-                photo_url_list=[self.profile_image_url, parser.profile_image_url],
-                disable_preview=True)
+                                                parser.profile_image_url))
             self.profile_image_url = parser.profile_image_url
         if self.profile_banner_url != parser.profile_banner_url:
-            self.telegram_notifier.send_message(
+            self.logger.info(
                 message=MESSAGE_TEMPLATE.format('Profile banner', self.profile_banner_url,
-                                                parser.profile_banner_url),
-                photo_url_list=[self.profile_banner_url, parser.profile_banner_url],
-                disable_preview=True)
+                                                parser.profile_banner_url))
             self.profile_banner_url = parser.profile_banner_url
 
     def watch(self):
