@@ -63,6 +63,26 @@ class ProfileParser():
         return self.user.get('profile_banner_url', '')
 
 
+class ElementBuffer():
+
+    def __init__(self, element, change_threshold: int = 2):
+        self.element = element
+        self.change_threshold = change_threshold
+        self.change_count = 0
+
+    def push(self, element) -> Union[dict, None]:
+        if element == self.element:
+            self.change_count = 0
+            return None
+        self.change_count += 1
+        if self.change_count >= self.change_threshold:
+            result = {'old': self.element, 'new': element}
+            self.element = element
+            self.change_count = 0
+            return result
+        return None
+
+
 class ProfileMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
@@ -73,17 +93,17 @@ class ProfileMonitor(MonitorBase):
         while not user:
             user = self.get_user()
         parser = ProfileParser(user)
-        self.name = parser.name
-        self.username = parser.username
-        self.location = parser.location
-        self.bio = parser.bio
-        self.website = parser.website
-        self.followers_count = parser.followers_count
-        self.following_count = parser.following_count
-        self.like_count = parser.like_count
-        self.tweet_count = parser.tweet_count
-        self.profile_image_url = parser.profile_image_url
-        self.profile_banner_url = parser.profile_banner_url
+        self.name = ElementBuffer(parser.name)
+        self.username = ElementBuffer(parser.username)
+        self.location = ElementBuffer(parser.location)
+        self.bio = ElementBuffer(parser.bio)
+        self.website = ElementBuffer(parser.website)
+        self.followers_count = ElementBuffer(parser.followers_count)
+        self.following_count = ElementBuffer(parser.following_count)
+        self.like_count = ElementBuffer(parser.like_count)
+        self.tweet_count = ElementBuffer(parser.tweet_count)
+        self.profile_image_url = ElementBuffer(parser.profile_image_url)
+        self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
 
         self.telegram_notifier = TelegramNotifier(
             token=token_config['telegram_bot_token'],
@@ -106,49 +126,53 @@ class ProfileMonitor(MonitorBase):
 
     def detect_change_and_update(self, user: dict):
         parser = ProfileParser(user)
-        if self.name != parser.name:
-            self.logger.info(message=MESSAGE_TEMPLATE.format('Name', self.name, parser.name))
-            self.name = parser.name
-        if self.username != parser.username:
+
+        result = self.name.push(parser.name)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Name', result['old'], result['new']))
+
+        result = self.username.push(parser.username)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Username', result['old'], result['new']))
+
+        result = self.location.push(parser.location)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Location', result['old'], result['new']))
+
+        result = self.bio.push(parser.bio)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Bio', result['old'], result['new']))
+
+        result = self.website.push(parser.website)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Website', result['old'], result['new']))
+
+        result = self.followers_count.push(parser.followers_count)
+        if result:
             self.logger.info(
-                message=MESSAGE_TEMPLATE.format('Username', self.username, parser.username))
-            self.username = parser.username
-        if self.location != parser.location:
+                MESSAGE_TEMPLATE.format('Followers count', result['old'], result['new']))
+
+        result = self.following_count.push(parser.following_count)
+        if result:
             self.logger.info(
-                message=MESSAGE_TEMPLATE.format('Location', self.location, parser.location))
-            self.location = parser.location
-        if self.bio != parser.bio:
-            self.logger.info(message=MESSAGE_TEMPLATE.format('Bio', self.bio, parser.bio))
-            self.bio = parser.bio
-        if self.website != parser.website:
+                MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+
+        result = self.like_count.push(parser.like_count)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Like count', result['old'], result['new']))
+
+        result = self.tweet_count.push(parser.tweet_count)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Tweet count', result['old'], result['new']))
+
+        result = self.profile_image_url.push(parser.profile_image_url)
+        if result:
+            self.logger.info(MESSAGE_TEMPLATE.format('Profile image', result['old'], result['new']))
+
+        result = self.profile_banner_url.push(parser.profile_banner_url)
+        if result:
             self.logger.info(
-                message=MESSAGE_TEMPLATE.format('Website', self.website, parser.website))
-            self.website = parser.website
-        if self.followers_count != parser.followers_count:
-            self.followers_count = parser.followers_count
-        if self.following_count != parser.following_count:
-            self.logger.info(
-                MESSAGE_TEMPLATE.format('Following count', self.following_count,
-                                        parser.following_count))
-            self.following_count = parser.following_count
-        if self.like_count != parser.like_count:
-            self.logger.info(
-                MESSAGE_TEMPLATE.format('Like count', self.like_count, parser.like_count))
-            self.like_count = parser.like_count
-        if self.tweet_count != parser.tweet_count:
-            self.logger.info(
-                MESSAGE_TEMPLATE.format('Tweet count', self.tweet_count, parser.tweet_count))
-            self.tweet_count = parser.tweet_count
-        if self.profile_image_url != parser.profile_image_url:
-            self.logger.info(
-                message=MESSAGE_TEMPLATE.format('Profile image', self.profile_image_url,
-                                                parser.profile_image_url))
-            self.profile_image_url = parser.profile_image_url
-        if self.profile_banner_url != parser.profile_banner_url:
-            self.logger.info(
-                message=MESSAGE_TEMPLATE.format('Profile banner', self.profile_banner_url,
-                                                parser.profile_banner_url))
-            self.profile_banner_url = parser.profile_banner_url
+                MESSAGE_TEMPLATE.format('Profile banner', result['old'], result['new']))
 
     def watch(self):
         user = self.get_user()
