@@ -159,9 +159,6 @@ class ProfileMonitor(MonitorBase):
                 disable_preview=True)
 
         result = self.followers_count.push(parser.followers_count)
-        if result:
-            self.logger.info(
-                MESSAGE_TEMPLATE.format('Followers count', result['old'], result['new']))
 
         result = self.following_count.push(parser.following_count)
         if result:
