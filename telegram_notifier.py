@@ -22,7 +22,7 @@ class TelegramNotifier:
         self.logger = logging.getLogger('{}-{}'.format(username, module))
         self.logger.info('Init telegram bot [{}][{}] succeed.'.format(username, module))
 
-    @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
+    @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5, tries=10)
     def _send_message_to_single_chat(self, chat_id: str, message: str,
                                      photo_url_list: Union[List[str], None], disable_preview: bool):
         if photo_url_list:
