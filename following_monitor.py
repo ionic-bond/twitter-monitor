@@ -1,33 +1,21 @@
 #!/usr/bin/python3
 
-import logging
-from datetime import datetime
 from typing import List, Union, Tuple, Dict
 
 from monitor_base import MonitorBase
-from telegram_notifier import TelegramNotifier
-from twitter_watcher import TwitterWatcher
 
 
 class FollowingMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
-        self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_id_by_username(username)
+        super().__init__('Following', token_config, username, telegram_chat_id_list)
 
         self.following_dict = None
         while self.following_dict is None:
             self.following_dict = self.get_all_following(self.user_id)
 
-        self.telegram_notifier = TelegramNotifier(
-            token=token_config['telegram_bot_token'],
-            chat_id_list=telegram_chat_id_list,
-            username=username,
-            module='Following')
-        self.logger = logging.getLogger('{}-Following'.format(username))
         self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing users: {}'.format(
             self.user_id, [user['username'] for user in self.following_dict.values()]))
-        self.last_watch_time = datetime.now()
 
     def get_all_following(self, user_id: str) -> Union[Dict[str, dict], None]:
         url = 'https://api.twitter.com/2/users/{}/following'.format(user_id)
@@ -105,7 +93,7 @@ class FollowingMonitor(MonitorBase):
             return
         self.detect_changes(self.following_dict, following_dict)
         self.following_dict = following_dict
-        self.last_watch_time = datetime.now()
+        self.update_last_watch_time()
 
     def status(self) -> str:
         return 'Last: {}, number: {}'.format(self.last_watch_time, len(self.following_dict))

@@ -4,13 +4,9 @@ Because the twitter api only allows to query the last 200 tweets sorted by creat
 we cannot know if the user likes a very old tweet.
 """
 
-import logging
-from datetime import datetime
 from typing import List, Union, Set
 
 from monitor_base import MonitorBase
-from telegram_notifier import TelegramNotifier
-from twitter_watcher import TwitterWatcher
 
 
 def _get_like_id_set(like_list: list) -> Set[str]:
@@ -20,8 +16,7 @@ def _get_like_id_set(like_list: list) -> Set[str]:
 class LikeMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
-        self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_id_by_username(username)
+        super().__init__('Like', token_config, username, telegram_chat_id_list)
 
         like_list = None
         while like_list is None:
@@ -29,15 +24,8 @@ class LikeMonitor(MonitorBase):
         self.existing_like_id_set = _get_like_id_set(like_list)
         self.min_like_id = min(self.existing_like_id_set) if self.existing_like_id_set else 0
 
-        self.telegram_notifier = TelegramNotifier(
-            token=token_config['telegram_bot_token'],
-            chat_id_list=telegram_chat_id_list,
-            username=username,
-            module='Like')
-        self.logger = logging.getLogger('{}-Like'.format(username))
         self.logger.info('Init like monitor succeed.\nUser id: {}\nExisting likes: {}'.format(
             self.user_id, self.existing_like_id_set))
-        self.last_watch_time = datetime.now()
 
     def get_like_list(self) -> Union[list, None]:
         url = 'https://api.twitter.com/1.1/favorites/list.json'
@@ -53,7 +41,7 @@ class LikeMonitor(MonitorBase):
                 self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
                                                                      like['text']))
         self.existing_like_id_set |= _get_like_id_set(like_list)
-        self.last_watch_time = datetime.now()
+        self.update_last_watch_time()
 
     def status(self) -> str:
         return 'Last: {}, number: {}'.format(self.last_watch_time, len(self.existing_like_id_set))
