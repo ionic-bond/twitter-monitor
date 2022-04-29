@@ -1,13 +1,9 @@
 #!/usr/bin/python3
 
-import logging
-from datetime import datetime
 from functools import cached_property
 from typing import List, Union
 
 from monitor_base import MonitorBase
-from telegram_notifier import TelegramNotifier
-from twitter_watcher import TwitterWatcher
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
 
@@ -71,6 +67,12 @@ class ElementBuffer():
         self.change_threshold = change_threshold
         self.change_count = 0
 
+    def __str__(self):
+        return str(self.element)
+
+    def __repr__(self):
+        return str(self.element)
+
     def push(self, element) -> Union[dict, None]:
         if element == self.element:
             self.change_count = 0
@@ -87,8 +89,7 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
 
     def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
-        self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        self.user_id = self.twitter_watcher.get_id_by_username(username)
+        super().__init__('Profile', token_config, username, telegram_chat_id_list)
 
         user = None
         while not user:
@@ -106,14 +107,7 @@ class ProfileMonitor(MonitorBase):
         self.profile_image_url = ElementBuffer(parser.profile_image_url)
         self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
 
-        self.telegram_notifier = TelegramNotifier(
-            token=token_config['telegram_bot_token'],
-            chat_id_list=telegram_chat_id_list,
-            username=username,
-            module='Profile')
-        self.logger = logging.getLogger('{}-Profile'.format(username))
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
-        self.last_watch_time = datetime.now()
 
     def get_user(self) -> Union[dict, None]:
         # Use v1 API because v2 API doesn't provide like_count.
@@ -190,7 +184,7 @@ class ProfileMonitor(MonitorBase):
         if not user:
             return
         self.detect_change_and_update(user)
-        self.last_watch_time = datetime.now()
+        self.update_last_watch_time()
 
     def status(self) -> str:
         return 'Last: {}'.format(self.last_watch_time)
