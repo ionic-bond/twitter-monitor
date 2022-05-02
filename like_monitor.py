@@ -40,7 +40,10 @@ class LikeMonitor(MonitorBase):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
                                                                      like['text']))
-        self.existing_like_id_set |= _get_like_id_set(like_list)
+        like_id_set = _get_like_id_set(like_list)
+        if len(like_id_set) > 150:
+            self.min_like_id = max(self.min_like_id, min(like_id_set))
+        self.existing_like_id_set |= like_id_set
         self.update_last_watch_time()
 
     def status(self) -> str:
