@@ -37,11 +37,11 @@ class FollowingMonitor(MonitorBase):
             result[user['id']] = user
         return result
 
-    def get_user_details(self, user_id: str) -> Tuple[str, str]:
+    def get_user_details(self, user_id: str) -> Tuple[str, Union[str, None]]:
         params = {'user.fields': 'name,description,url,created_at,public_metrics,profile_image_url'}
         user = self.twitter_watcher.get_user_by_id(user_id, params)
         if user.get('errors', None):
-            return '\n'.join([error['detail'] for error in user['errors']]), ''
+            return '\n'.join([error['detail'] for error in user['errors']]), None
         data = user['data']
         details_str = 'Name: {}'.format(data.get('name', ''))
         details_str += '\nBio: {}'.format(data.get('description', ''))
@@ -76,7 +76,9 @@ class FollowingMonitor(MonitorBase):
                 if details_str:
                     message += '\n{}'.format(details_str)
                 self.telegram_notifier.send_message(
-                    message=message, photo_url_list=[profile_image_url], disable_preview=True)
+                    message=message,
+                    photo_url_list=[profile_image_url] if profile_image_url else [],
+                    disable_preview=True)
         if inc_user_ids:
             self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
@@ -85,7 +87,9 @@ class FollowingMonitor(MonitorBase):
                 if details_str:
                     message += '\n{}'.format(details_str)
                 self.telegram_notifier.send_message(
-                    message=message, photo_url_list=[profile_image_url], disable_preview=True)
+                    message=message,
+                    photo_url_list=[profile_image_url] if profile_image_url else [],
+                    disable_preview=True)
 
     def watch(self):
         following_dict = self.get_all_following(self.user_id)
