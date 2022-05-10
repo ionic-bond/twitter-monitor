@@ -45,6 +45,8 @@ class TelegramNotifier:
         message = '[{}][{}] {}'.format(self.username, self.module, message)
         self.logger.info('Sending message: {}\n'.format(message))
         if photo_url_list:
+            photo_url_list = [photo_url for photo_url in photo_url_list if photo_url]
+        if photo_url_list:
             self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         for chat_id in self.chat_id_list:
             self._send_message_to_single_chat(chat_id, message, photo_url_list, disable_preview)
