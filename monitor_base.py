@@ -21,10 +21,10 @@ class MonitorBase(ABC):
             username=username,
             module=module)
         self.logger = logging.getLogger('{}-{}'.format(username, module))
-        self.last_watch_time = datetime.now()
+        self.last_watch_time = datetime.utcnow()
 
     def update_last_watch_time(self):
-        self.last_watch_time = datetime.now()
+        self.last_watch_time = datetime.utcnow()
 
     @abstractmethod
     def watch(self):

@@ -187,4 +187,4 @@ class ProfileMonitor(MonitorBase):
         self.update_last_watch_time()
 
     def status(self) -> str:
-        return 'Last: {}'.format(self.last_watch_time)
+        return 'Last: {}, username: {}'.format(self.last_watch_time, self.username.element)

@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import sys
+from datetime import datetime, timedelta
 
 import click
 from apscheduler.executors.pool import ThreadPoolExecutor
@@ -35,15 +36,25 @@ def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
     logger.addHandler(file_handler)
 
 
-def _send_summary(notifier: TelegramNotifier, monitors: dict, watcher: TwitterWatcher) -> str:
-    monitor_status = dict()
+def _send_summary(notifier: TelegramNotifier, monitors: dict, watcher: TwitterWatcher):
     for modoule, data in monitors.items():
-        monitor_status[modoule] = {}
+        monitor_status = {}
         for username, monitor in data.items():
-            monitor_status[modoule][username] = monitor.status()
-    notifier.send_message('Monitor status: {}'.format(json.dumps(monitor_status, indent=4)))
+            monitor_status[username] = monitor.status()
+        notifier.send_message('{}: {}'.format(modoule, json.dumps(monitor_status, indent=4)))
     token_status = watcher.check_token()
     notifier.send_message('Token status: {}'.format(json.dumps(token_status, indent=4)))
+
+
+def _check_monitors_are_working(notifier: TelegramNotifier, monitors: dict):
+    time_threshold = datetime.utcnow() - timedelta(minutes=30)
+    alerts = []
+    for modoule, data in monitors.items():
+        for username, monitor in data.items():
+            if monitor.last_watch_time < time_threshold:
+                alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
+    if alerts:
+        notifier.send_message('Alert: \n{}'.format('\n'.join(alerts)))
 
 
 @click.group()
@@ -170,8 +181,13 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
         scheduler.add_job(
             _send_summary,
             trigger='cron',
-            hour='4,16',
+            hour='6',
             args=[telegram_notifier, monitors, twitter_watcher])
+        scheduler.add_job(
+            _check_monitors_are_working,
+            trigger='cron',
+            hour='*',
+            args=[telegram_notifier, monitors])
 
     scheduler.start()
 

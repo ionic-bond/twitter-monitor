@@ -71,12 +71,12 @@ class TelegramNotifier:
             updates = self._get_updates(offset=update_offset)
             update_offset = self._get_new_update_offset(updates)
             for update in updates:
-                message = update.message
-                if message.date < sending_time:
+                received_message = update.message
+                if received_message.date < sending_time:
                     continue
-                if message.chat.id not in self.chat_id_list:
+                if received_message.chat.id not in self.chat_id_list:
                     continue
-                text = message.text.upper()
+                text = received_message.text.upper()
                 if text == 'Y':
                     return True
                 if text == 'N':
