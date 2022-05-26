@@ -34,7 +34,7 @@ class LikeMonitor(MonitorBase):
 
     def watch(self):
         like_list = self.get_like_list()
-        if not like_list:
+        if like_list is None:
             return
         for like in reversed(like_list):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
