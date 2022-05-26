@@ -32,7 +32,7 @@ class TwitterWatcher:
             if response.status_code != 429:
                 self.logger.error('Request returned an error: {} {}, try next token.'.format(
                     response.status_code, response.text))
-        self.logger.error('All tokens are unavailable, query fails.')
+        self.logger.error('All tokens are unavailable, query fails. {}'.format(url))
         return None
 
     def get_user_by_username(self, username: str, params: dict) -> dict:
