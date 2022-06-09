@@ -3,6 +3,7 @@
 from typing import List, Union
 
 from monitor_base import MonitorBase
+from utils import convert_html_to_text
 
 
 class TweetMonitor(MonitorBase):
@@ -33,7 +34,7 @@ class TweetMonitor(MonitorBase):
         if tweet_list is None:
             return
         for tweet in tweet_list:
-            self.telegram_notifier.send_message(tweet['text'])
+            self.telegram_notifier.send_message(convert_html_to_text(tweet['text']))
         if tweet_list:
             self.last_tweet_id = tweet_list[0]['id']
         self.update_last_watch_time()

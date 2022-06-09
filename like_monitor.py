@@ -7,6 +7,7 @@ we cannot know if the user likes a very old tweet.
 from typing import List, Union, Set
 
 from monitor_base import MonitorBase
+from utils import convert_html_to_text
 
 
 def _get_like_id_set(like_list: list) -> Set[str]:
@@ -41,7 +42,8 @@ class LikeMonitor(MonitorBase):
                 # Debug log
                 self.logger.info('Like: {}, num: {}'.format(like['id'], len(like_list)))
                 self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
-                                                                     like['text']))
+                                                                     convert_html_to_text(
+                                                                         like['text'])))
         like_id_set = _get_like_id_set(like_list)
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))
