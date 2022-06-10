@@ -46,13 +46,16 @@ def _send_summary(notifier: TelegramNotifier, monitors: dict, watcher: TwitterWa
     notifier.send_message('Token status: {}'.format(json.dumps(token_status, indent=4)))
 
 
-def _check_monitors_are_working(notifier: TelegramNotifier, monitors: dict):
+def _check_monitors_status(notifier: TelegramNotifier, monitors: dict):
     time_threshold = datetime.utcnow() - timedelta(minutes=30)
     alerts = []
     for modoule, data in monitors.items():
         for username, monitor in data.items():
             if monitor.last_watch_time < time_threshold:
                 alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
+    for username, monitor in monitors['profile'].items():
+        if monitor.username.element != username:
+            alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
         notifier.send_message('Alert: \n{}'.format('\n'.join(alerts)))
 
@@ -184,7 +187,7 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
             hour='6',
             args=[telegram_notifier, monitors, twitter_watcher])
         scheduler.add_job(
-            _check_monitors_are_working,
+            _check_monitors_status,
             trigger='cron',
             hour='*',
             args=[telegram_notifier, monitors])
