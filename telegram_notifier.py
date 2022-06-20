@@ -22,7 +22,7 @@ class TelegramNotifier:
         self.logger = logging.getLogger('{}-{}'.format(username, module))
         self.logger.info('Init telegram bot [{}][{}] succeed.'.format(username, module))
 
-    @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5, tries=10)
+    @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5, tries=5)
     def _send_message_to_single_chat(self, chat_id: str, message: str,
                                      photo_url_list: Union[List[str], None], disable_preview: bool):
         if photo_url_list:
@@ -49,7 +49,12 @@ class TelegramNotifier:
         if photo_url_list:
             self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         for chat_id in self.chat_id_list:
-            self._send_message_to_single_chat(chat_id, message, photo_url_list, disable_preview)
+            try:
+                self._send_message_to_single_chat(chat_id, message, photo_url_list, disable_preview)
+            except BadRequest as e:
+                # Telegram cannot send some photos for unknown reasons.
+                self.logger.error('{}, trying to send message without photo.'.format(e))
+                self._send_message_to_single_chat(chat_id, message, None, disable_preview)
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
     def _get_updates(self, offset=None) -> List[telegram.Update]:
