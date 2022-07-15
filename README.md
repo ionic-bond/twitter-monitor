@@ -1,6 +1,6 @@
 # Twitter Monitor
 
-Monitor the `following`, `tweet` and `like` of a Twitter user and send the changes to the telegram channel.
+Monitor the `following`, `tweet`, `like` and `profile` of a Twitter user and send the changes to the telegram channel.
 
 (Because the twitter api only allows to query the last 200 **user liked tweets** sorted by creation time, we cannot know if **the user likes a very old tweet**.)
 
