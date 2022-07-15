@@ -18,7 +18,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install yapf
-    - name: Analysing the code with pylint
+    - name: Formatting the code
       run: |
         yapf --style '{based_on_style: google, column_limit: 120, allow_multiline_lambdas: True}' --recursive --in-place .
         git config --global user.name 'Auto YAPF'
