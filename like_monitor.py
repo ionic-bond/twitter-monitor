@@ -41,8 +41,8 @@ class LikeMonitor(MonitorBase):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 # Debug log
                 self.logger.info('Like: {}, num: {}'.format(like['id'], len(like_list)))
-                self.telegram_notifier.send_message('@{}: {}'.format(
-                    like['user']['screen_name'], convert_html_to_text(like['text'])))
+                self.telegram_notifier.send_message('@{}: {}'.format(like['user']['screen_name'],
+                                                                     convert_html_to_text(like['text'])))
         like_id_set = _get_like_id_set(like_list)
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))
@@ -50,5 +50,5 @@ class LikeMonitor(MonitorBase):
         self.update_last_watch_time()
 
     def status(self) -> str:
-        return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time,
-                                                   len(self.existing_like_id_set), self.min_like_id)
+        return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time, len(self.existing_like_id_set),
+                                                   self.min_like_id)

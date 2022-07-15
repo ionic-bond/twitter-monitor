@@ -11,8 +11,7 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, module: str, token_config: dict, username: str,
-                 telegram_chat_id_list: List[str]):
+    def __init__(self, module: str, token_config: dict, username: str, telegram_chat_id_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         self.telegram_notifier = TelegramNotifier(token=token_config['telegram_bot_token'],

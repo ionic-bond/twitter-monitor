@@ -75,10 +75,9 @@ class FollowingMonitor(MonitorBase):
                 details_str, profile_image_url = self.get_user_details(dec_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.telegram_notifier.send_message(
-                    message=message,
-                    photo_url_list=[profile_image_url] if profile_image_url else [],
-                    disable_preview=True)
+                self.telegram_notifier.send_message(message=message,
+                                                    photo_url_list=[profile_image_url] if profile_image_url else [],
+                                                    disable_preview=True)
         if inc_user_ids:
             self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
@@ -86,10 +85,9 @@ class FollowingMonitor(MonitorBase):
                 details_str, profile_image_url = self.get_user_details(inc_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.telegram_notifier.send_message(
-                    message=message,
-                    photo_url_list=[profile_image_url] if profile_image_url else [],
-                    disable_preview=True)
+                self.telegram_notifier.send_message(message=message,
+                                                    photo_url_list=[profile_image_url] if profile_image_url else [],
+                                                    disable_preview=True)
 
     def watch(self):
         following_dict = self.get_all_following(self.user_id)
