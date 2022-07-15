@@ -20,7 +20,7 @@ jobs:
         pip install yapf
     - name: Formatting the code
       run: |
-        yapf --style '{based_on_style: google, column_limit: 120, allow_multiline_lambdas: True}' --recursive --in-place .
+        yapf --style '{based_on_style: google, column_limit: 100, allow_multiline_lambdas: True}' --recursive --in-place .
         git config --global user.name 'Auto YAPF'
         git config --global user.email 'github-actions@github.com'
         git diff --quiet && git diff --staged --quiet || git commit -am 'Auto YAPF with Google python style' && git push
