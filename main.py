@@ -68,18 +68,16 @@ def cli():
 @cli.command()
 @click.option('--log_dir', default=os.path.join(sys.path[0], 'log'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
-@click.option(
-    '--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
-@click.option(
-    '--confirm/--no-confirm',
-    default=False,
-    help="Confirm with the maintainer during initialization")
+@click.option('--monitoring_config_path',
+              default=os.path.join(sys.path[0], 'config/monitoring.json'))
+@click.option('--confirm/--no-confirm',
+              default=False,
+              help="Confirm with the maintainer during initialization")
 def run(log_dir, token_config_path, monitoring_config_path, confirm):
     os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(
-        filename=os.path.join(log_dir, 'main'),
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.WARNING)
+    logging.basicConfig(filename=os.path.join(log_dir, 'main'),
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        level=logging.WARNING)
     _setup_logger('twitter', os.path.join(log_dir, 'twitter-api'))
     _setup_logger('Maintainer-Scheduler', os.path.join(log_dir, 'scheduler'))
 
@@ -132,10 +130,9 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                                                                   weight, profile_weight_sum)
             monitors['profile'][username] = ProfileMonitor(token_config, username,
                                                            telegram_chat_id_list)
-            scheduler.add_job(
-                monitors['profile'][username].watch,
-                trigger='interval',
-                seconds=intervals['profile'][username])
+            scheduler.add_job(monitors['profile'][username].watch,
+                              trigger='interval',
+                              seconds=intervals['profile'][username])
         if monitoring_user.get('monitoring_following', False):
             logger_name = '{}-Following'.format(username)
             _setup_logger(logger_name, os.path.join(log_dir, logger_name))
@@ -143,20 +140,18 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                                                                     weight, following_weight_sum)
             monitors['following'][username] = FollowingMonitor(token_config, username,
                                                                telegram_chat_id_list)
-            scheduler.add_job(
-                monitors['following'][username].watch,
-                trigger='interval',
-                seconds=intervals['following'][username])
+            scheduler.add_job(monitors['following'][username].watch,
+                              trigger='interval',
+                              seconds=intervals['following'][username])
         if monitoring_user.get('monitoring_like', False):
             logger_name = '{}-Like'.format(username)
             _setup_logger(logger_name, os.path.join(log_dir, logger_name))
             intervals['like'][username] = _get_interval_second(LIKE_LIMIT, token_number, weight,
                                                                like_weight_sum)
             monitors['like'][username] = LikeMonitor(token_config, username, telegram_chat_id_list)
-            scheduler.add_job(
-                monitors['like'][username].watch,
-                trigger='interval',
-                seconds=intervals['like'][username])
+            scheduler.add_job(monitors['like'][username].watch,
+                              trigger='interval',
+                              seconds=intervals['like'][username])
         if monitoring_user.get('monitoring_tweet', False):
             logger_name = '{}-Tweet'.format(username)
             _setup_logger(logger_name, os.path.join(log_dir, logger_name))
@@ -164,10 +159,9 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                                                                 tweet_weight_sum)
             monitors['tweet'][username] = TweetMonitor(token_config, username,
                                                        telegram_chat_id_list)
-            scheduler.add_job(
-                monitors['tweet'][username].watch,
-                trigger='interval',
-                seconds=intervals['tweet'][username])
+            scheduler.add_job(monitors['tweet'][username].watch,
+                              trigger='interval',
+                              seconds=intervals['tweet'][username])
 
     if monitoring_config['maintainer_chat_id']:
         telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'],
@@ -181,16 +175,14 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                 telegram_notifier.send_message('Monitor will exit now.')
                 raise RuntimeError('Initialization information confirm error')
             telegram_notifier.send_message('Monitor initialization succeeded.')
-        scheduler.add_job(
-            _send_summary,
-            trigger='cron',
-            hour='6',
-            args=[telegram_notifier, monitors, twitter_watcher])
-        scheduler.add_job(
-            _check_monitors_status,
-            trigger='cron',
-            hour='*',
-            args=[telegram_notifier, monitors])
+        scheduler.add_job(_send_summary,
+                          trigger='cron',
+                          hour='6',
+                          args=[telegram_notifier, monitors, twitter_watcher])
+        scheduler.add_job(_check_monitors_status,
+                          trigger='cron',
+                          hour='*',
+                          args=[telegram_notifier, monitors])
 
     scheduler.start()
 
