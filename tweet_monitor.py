@@ -16,7 +16,8 @@ class TweetMonitor(MonitorBase):
             tweet_list = self.get_tweet_list()
         self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
 
-        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(self.user_id, tweet_list[0]))
+        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(
+            self.user_id, tweet_list[0]))
 
     def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
         url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)

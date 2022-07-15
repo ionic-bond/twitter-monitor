@@ -31,7 +31,8 @@ class ProfileParser():
 
     @cached_property
     def website(self) -> str:
-        return self.user.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+        return self.user.get('entities', {}).get('url', {}).get('urls',
+                                                                [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
@@ -123,37 +124,40 @@ class ProfileMonitor(MonitorBase):
 
         result = self.name.push(parser.name)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Name', result['old'], result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Name', result['old'], result['new']),
                                                 disable_preview=True)
 
         result = self.username.push(parser.username)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Username', result['old'],
-                                                                                result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Username', result['old'], result['new']),
                                                 disable_preview=True)
 
         result = self.location.push(parser.location)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Location', result['old'],
-                                                                                result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Location', result['old'], result['new']),
                                                 disable_preview=True)
 
         result = self.bio.push(parser.bio)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Bio', result['old'], result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Bio', result['old'], result['new']),
                                                 disable_preview=True)
 
         result = self.website.push(parser.website)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Website', result['old'],
-                                                                                result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Website', result['old'], result['new']),
                                                 disable_preview=True)
 
         result = self.followers_count.push(parser.followers_count)
 
         result = self.following_count.push(parser.following_count)
         if result:
-            self.logger.info(MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            self.logger.info(
+                MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
 
         result = self.like_count.push(parser.like_count)
         if result:
@@ -165,14 +169,14 @@ class ProfileMonitor(MonitorBase):
 
         result = self.profile_image_url.push(parser.profile_image_url)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Profile image', result['old'],
-                                                                                result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Profile image', result['old'], result['new']),
                                                 photo_url_list=[result['old'], result['new']])
 
         result = self.profile_banner_url.push(parser.profile_banner_url)
         if result:
-            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'],
-                                                                                result['new']),
+            self.telegram_notifier.send_message(message=MESSAGE_TEMPLATE.format(
+                'Profile banner', result['old'], result['new']),
                                                 photo_url_list=[result['old'], result['new']])
 
     def watch(self):
