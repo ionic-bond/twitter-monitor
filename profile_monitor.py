@@ -90,8 +90,13 @@ class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str], cqhttp_url_list: List[str]):
-        super().__init__(monitor_type=self.monitor_type, username=username, token_config=token_config, telegram_chat_id_list=telegram_chat_id_list, cqhttp_url_list=cqhttp_url_list)
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+                 cqhttp_url_list: List[str]):
+        super().__init__(monitor_type=self.monitor_type,
+                         username=username,
+                         token_config=token_config,
+                         telegram_chat_id_list=telegram_chat_id_list,
+                         cqhttp_url_list=cqhttp_url_list)
 
         user = None
         while not user:
@@ -126,33 +131,31 @@ class ProfileMonitor(MonitorBase):
 
         result = self.name.push(parser.name)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Name', result['old'], result['new']),
-                                                disable_preview=True)
+            self.send_message(message=MESSAGE_TEMPLATE.format('Name', result['old'], result['new']),
+                              disable_preview=True)
 
         result = self.username.push(parser.username)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Username', result['old'], result['new']),
-                                                disable_preview=True)
+            self.send_message(message=MESSAGE_TEMPLATE.format('Username', result['old'],
+                                                              result['new']),
+                              disable_preview=True)
 
         result = self.location.push(parser.location)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Location', result['old'], result['new']),
-                                                disable_preview=True)
+            self.send_message(message=MESSAGE_TEMPLATE.format('Location', result['old'],
+                                                              result['new']),
+                              disable_preview=True)
 
         result = self.bio.push(parser.bio)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Bio', result['old'], result['new']),
-                                                disable_preview=True)
+            self.send_message(message=MESSAGE_TEMPLATE.format('Bio', result['old'], result['new']),
+                              disable_preview=True)
 
         result = self.website.push(parser.website)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Website', result['old'], result['new']),
-                                                disable_preview=True)
+            self.send_message(message=MESSAGE_TEMPLATE.format('Website', result['old'],
+                                                              result['new']),
+                              disable_preview=True)
 
         result = self.followers_count.push(parser.followers_count)
 
@@ -171,15 +174,15 @@ class ProfileMonitor(MonitorBase):
 
         result = self.profile_image_url.push(parser.profile_image_url)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Profile image', result['old'], result['new']),
-                                                photo_url_list=[result['old'], result['new']])
+            self.send_message(message=MESSAGE_TEMPLATE.format('Profile image', result['old'],
+                                                              result['new']),
+                              photo_url_list=[result['old'], result['new']])
 
         result = self.profile_banner_url.push(parser.profile_banner_url)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format(
-                'Profile banner', result['old'], result['new']),
-                                                photo_url_list=[result['old'], result['new']])
+            self.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'],
+                                                              result['new']),
+                              photo_url_list=[result['old'], result['new']])
 
     def watch(self):
         user = self.get_user()

@@ -9,8 +9,13 @@ class FollowingMonitor(MonitorBase):
     monitor_type = 'Following'
     rate_limit = 1
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str], cqhttp_url_list: List[str]):
-        super().__init__(monitor_type=self.monitor_type, username=username, token_config=token_config, telegram_chat_id_list=telegram_chat_id_list, cqhttp_url_list=cqhttp_url_list)
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+                 cqhttp_url_list: List[str]):
+        super().__init__(monitor_type=self.monitor_type,
+                         username=username,
+                         token_config=token_config,
+                         telegram_chat_id_list=telegram_chat_id_list,
+                         cqhttp_url_list=cqhttp_url_list)
 
         self.following_dict = None
         while self.following_dict is None:
@@ -77,10 +82,9 @@ class FollowingMonitor(MonitorBase):
                 details_str, profile_image_url = self.get_user_details(dec_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.send_message(
-                    message=message,
-                    photo_url_list=[profile_image_url] if profile_image_url else [],
-                    disable_preview=True)
+                self.send_message(message=message,
+                                  photo_url_list=[profile_image_url] if profile_image_url else [],
+                                  disable_preview=True)
         if inc_user_ids:
             self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
@@ -88,10 +92,9 @@ class FollowingMonitor(MonitorBase):
                 details_str, profile_image_url = self.get_user_details(inc_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)
-                self.send_message(
-                    message=message,
-                    photo_url_list=[profile_image_url] if profile_image_url else [],
-                    disable_preview=True)
+                self.send_message(message=message,
+                                  photo_url_list=[profile_image_url] if profile_image_url else [],
+                                  disable_preview=True)
 
     def watch(self):
         following_dict = self.get_all_following(self.user_id)

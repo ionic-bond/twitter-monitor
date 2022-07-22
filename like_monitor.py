@@ -18,8 +18,13 @@ class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     rate_limit = 5
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str], cqhttp_url_list: List[str]):
-        super().__init__(monitor_type=self.monitor_type, username=username, token_config=token_config, telegram_chat_id_list=telegram_chat_id_list, cqhttp_url_list=cqhttp_url_list)
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+                 cqhttp_url_list: List[str]):
+        super().__init__(monitor_type=self.monitor_type,
+                         username=username,
+                         token_config=token_config,
+                         telegram_chat_id_list=telegram_chat_id_list,
+                         cqhttp_url_list=cqhttp_url_list)
 
         like_list = None
         while like_list is None:
@@ -43,8 +48,8 @@ class LikeMonitor(MonitorBase):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 # Debug log
                 self.logger.info('Like: {}, num: {}'.format(like['id'], len(like_list)))
-                self.send_message('@{}: {}'.format(
-                    like['user']['screen_name'], convert_html_to_text(like['text'])))
+                self.send_message('@{}: {}'.format(like['user']['screen_name'],
+                                                   convert_html_to_text(like['text'])))
         like_id_set = _get_like_id_set(like_list)
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))

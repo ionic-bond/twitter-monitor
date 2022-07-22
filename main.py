@@ -125,10 +125,11 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                 monitor_type = monitor_cls.monitor_type
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-                intervals[monitor_type][username] = _get_interval_second(monitor_cls.rate_limit, token_number,
-                                                                      weight, profile_weight_sum)
+                intervals[monitor_type][username] = _get_interval_second(
+                    monitor_cls.rate_limit, token_number, weight, profile_weight_sum)
                 monitors[monitor_type][username] = monitor_cls(username, token_config,
-                                                               telegram_chat_id_list, cqhttp_url_list)
+                                                               telegram_chat_id_list,
+                                                               cqhttp_url_list)
                 scheduler.add_job(monitors[monitor_type][username].watch,
                                   trigger='interval',
                                   seconds=intervals[monitor_type][username])

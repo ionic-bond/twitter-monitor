@@ -21,13 +21,13 @@ class CqhttpNotifier:
         return {'Authorization': 'Bearer {}'.format(self.token)}
 
     def _send_text_to_single_chat(self, url: str, message: str):
-        data = { 'message': message }
+        data = {'message': message}
         response = requests.post(url, headers=self._get_headers(), data=data)
         if response.status_code != 200:
             self.logger.error('Cqhttp send text error: {}'.format(response.text))
 
     def _send_photo_to_single_chat(self, url: str, photo_url: str):
-        data = { 'message': '[CQ:image,file={}]'.format(photo_url) }
+        data = {'message': '[CQ:image,file={}]'.format(photo_url)}
         response = requests.post(url, headers=self._get_headers(), data=data)
         if response.status_code != 200:
             self.logger.error('Cqhttp send photo {} error: {}'.format(photo_url, response.text))

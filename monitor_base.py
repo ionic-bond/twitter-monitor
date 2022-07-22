@@ -19,13 +19,13 @@ class MonitorBase(ABC):
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.telegram_notifier = (TelegramNotifier(token=token_config['telegram_bot_token'],
-                                                  chat_id_list=telegram_chat_id_list,
-                                                  logger_name=logger_name)
-                                    if telegram_chat_id_list else None)
+                                                   chat_id_list=telegram_chat_id_list,
+                                                   logger_name=logger_name)
+                                  if telegram_chat_id_list else None)
         self.cqhttp_notifier = (CqhttpNotifier(token=token_config.get('cqhttp_access_token', ''),
                                                url_list=cqhttp_url_list,
                                                logger_name=logger_name)
-                                    if cqhttp_url_list else None)
+                                if cqhttp_url_list else None)
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)
         self.last_watch_time = datetime.utcnow()
 

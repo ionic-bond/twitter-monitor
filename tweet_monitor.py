@@ -10,8 +10,13 @@ class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str], cqhttp_url_list: List[str]):
-        super().__init__(monitor_type=self.monitor_type, username=username, token_config=token_config, telegram_chat_id_list=telegram_chat_id_list, cqhttp_url_list=cqhttp_url_list)
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+                 cqhttp_url_list: List[str]):
+        super().__init__(monitor_type=self.monitor_type,
+                         username=username,
+                         token_config=token_config,
+                         telegram_chat_id_list=telegram_chat_id_list,
+                         cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = None
         while tweet_list is None:
