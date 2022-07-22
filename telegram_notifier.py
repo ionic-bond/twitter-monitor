@@ -12,15 +12,13 @@ from telegram.error import BadRequest, RetryAfter, TimedOut, NetworkError
 
 class TelegramNotifier:
 
-    def __init__(self, token: str, chat_id_list: List[str], username: str, module: str):
+    def __init__(self, token: str, chat_id_list: List[str], logger_name: str):
         assert token
         assert chat_id_list
         self.bot = telegram.Bot(token=token)
         self.chat_id_list = chat_id_list
-        self.username = username
-        self.module = module
-        self.logger = logging.getLogger('{}-{}'.format(username, module))
-        self.logger.info('Init telegram bot [{}][{}] succeed.'.format(username, module))
+        self.logger = logging.getLogger('{}'.format(logger_name))
+        self.logger.info('Init telegram notifier succeed: {}'.format(str(chat_id_list)))
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5, tries=5)
     def _send_message_to_single_chat(self, chat_id: str, message: str,
@@ -46,12 +44,6 @@ class TelegramNotifier:
                      message: str,
                      photo_url_list: Union[List[str], None] = None,
                      disable_preview: bool = False):
-        message = '[{}][{}] {}'.format(self.username, self.module, message)
-        self.logger.info('Sending message: {}\n'.format(message))
-        if photo_url_list:
-            photo_url_list = [photo_url for photo_url in photo_url_list if photo_url]
-        if photo_url_list:
-            self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         for chat_id in self.chat_id_list:
             try:
                 self._send_message_to_single_chat(chat_id, message, photo_url_list, disable_preview)

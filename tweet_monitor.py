@@ -7,9 +7,11 @@ from utils import convert_html_to_text
 
 
 class TweetMonitor(MonitorBase):
+    monitor_type = 'Tweet'
+    rate_limit = 60
 
-    def __init__(self, token_config: dict, username: str, telegram_chat_id_list: List[str]):
-        super().__init__('Tweet', token_config, username, telegram_chat_id_list)
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str], cqhttp_url_list: List[str]):
+        super().__init__(monitor_type=self.monitor_type, username=username, token_config=token_config, telegram_chat_id_list=telegram_chat_id_list, cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = None
         while tweet_list is None:
@@ -34,7 +36,7 @@ class TweetMonitor(MonitorBase):
         if tweet_list is None:
             return
         for tweet in tweet_list:
-            self.telegram_notifier.send_message(convert_html_to_text(tweet['text']))
+            self.send_message(convert_html_to_text(tweet['text']))
         if tweet_list:
             self.last_tweet_id = tweet_list[0]['id']
         self.update_last_watch_time()

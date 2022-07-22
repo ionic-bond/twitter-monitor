@@ -18,10 +18,12 @@ from telegram_notifier import TelegramNotifier
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
 
-PROFILE_LIMIT = 60
-FOLLOWING_LIMIT = 1
-LIKE_LIMIT = 5
-TWEET_LIMIT = 60
+CONFIG_FIELD_TO_MONITOR = {
+    'monitoring_profile': ProfileMonitor,
+    'monitoring_following': FollowingMonitor,
+    'monitoring_like': LikeMonitor,
+    'monitoring_tweet': TweetMonitor
+}
 
 
 def _get_interval_second(limit_per_minute: int, token_number: int, widget: int, widget_sum: int):
@@ -53,7 +55,7 @@ def _check_monitors_status(notifier: TelegramNotifier, monitors: dict):
         for username, monitor in data.items():
             if monitor.last_watch_time < time_threshold:
                 alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
-    for username, monitor in monitors['profile'].items():
+    for username, monitor in monitors[ProfileMonitor.monitor_type].items():
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
@@ -105,68 +107,36 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
             tweet_weight_sum += monitoring_user['weight']
 
     token_number = len(token_config['twitter_bearer_token_list'])
-    monitors = {
-        'profile': {},
-        'following': {},
-        'like': {},
-        'tweet': {},
-    }
-    intervals = {
-        'profile': {},
-        'following': {},
-        'like': {},
-        'tweet': {},
-    }
+    monitors = dict()
+    intervals = dict()
+    for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
+        monitors[monitor_cls.monitor_type] = dict()
+        intervals[monitor_cls.monitor_type] = dict()
     executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)}
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         username = monitoring_user['username']
-        telegram_chat_id_list = monitoring_user['telegram_chat_id_list']
+        telegram_chat_id_list = monitoring_user.get('telegram_chat_id_list', None)
+        cqhttp_url_list = monitoring_user.get('cqhttp_url_list', None)
+        assert telegram_chat_id_list or cqhttp_url_list
         weight = monitoring_user['weight']
-        if monitoring_user.get('monitoring_profile', False):
-            logger_name = '{}-Profile'.format(username)
-            _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-            intervals['profile'][username] = _get_interval_second(PROFILE_LIMIT, token_number,
-                                                                  weight, profile_weight_sum)
-            monitors['profile'][username] = ProfileMonitor(token_config, username,
-                                                           telegram_chat_id_list)
-            scheduler.add_job(monitors['profile'][username].watch,
-                              trigger='interval',
-                              seconds=intervals['profile'][username])
-        if monitoring_user.get('monitoring_following', False):
-            logger_name = '{}-Following'.format(username)
-            _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-            intervals['following'][username] = _get_interval_second(FOLLOWING_LIMIT, token_number,
-                                                                    weight, following_weight_sum)
-            monitors['following'][username] = FollowingMonitor(token_config, username,
-                                                               telegram_chat_id_list)
-            scheduler.add_job(monitors['following'][username].watch,
-                              trigger='interval',
-                              seconds=intervals['following'][username])
-        if monitoring_user.get('monitoring_like', False):
-            logger_name = '{}-Like'.format(username)
-            _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-            intervals['like'][username] = _get_interval_second(LIKE_LIMIT, token_number, weight,
-                                                               like_weight_sum)
-            monitors['like'][username] = LikeMonitor(token_config, username, telegram_chat_id_list)
-            scheduler.add_job(monitors['like'][username].watch,
-                              trigger='interval',
-                              seconds=intervals['like'][username])
-        if monitoring_user.get('monitoring_tweet', False):
-            logger_name = '{}-Tweet'.format(username)
-            _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-            intervals['tweet'][username] = _get_interval_second(TWEET_LIMIT, token_number, weight,
-                                                                tweet_weight_sum)
-            monitors['tweet'][username] = TweetMonitor(token_config, username,
-                                                       telegram_chat_id_list)
-            scheduler.add_job(monitors['tweet'][username].watch,
-                              trigger='interval',
-                              seconds=intervals['tweet'][username])
+        for config_field, monitor_cls in CONFIG_FIELD_TO_MONITOR.items():
+            if monitoring_user.get(config_field, False):
+                monitor_type = monitor_cls.monitor_type
+                logger_name = '{}-{}'.format(username, monitor_type)
+                _setup_logger(logger_name, os.path.join(log_dir, logger_name))
+                intervals[monitor_type][username] = _get_interval_second(monitor_cls.rate_limit, token_number,
+                                                                      weight, profile_weight_sum)
+                monitors[monitor_type][username] = monitor_cls(username, token_config,
+                                                               telegram_chat_id_list, cqhttp_url_list)
+                scheduler.add_job(monitors[monitor_type][username].watch,
+                                  trigger='interval',
+                                  seconds=intervals[monitor_type][username])
 
     if monitoring_config['maintainer_chat_id']:
         telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'],
                                              [monitoring_config['maintainer_chat_id']],
-                                             'Maintainer', 'Scheduler')
+                                             'Maintainer-Scheduler')
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
         _send_summary(telegram_notifier, monitors, twitter_watcher)
@@ -200,7 +170,7 @@ def check_token(token_config_path, telegram_chat_id):
     print(result)
     if telegram_chat_id:
         telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'], [telegram_chat_id],
-                                             '', '')
+                                             '')
         telegram_notifier.send_message(result)
 
 
