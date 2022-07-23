@@ -3,7 +3,7 @@
 from typing import List, Union
 
 from monitor_base import MonitorBase
-from utils import convert_html_to_text
+from utils import convert_html_to_text, parse_media_from_tweet
 
 
 class TweetMonitor(MonitorBase):
@@ -27,21 +27,24 @@ class TweetMonitor(MonitorBase):
             self.user_id, tweet_list[0]))
 
     def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
-        url = 'https://api.twitter.com/2/users/{}/tweets'.format(self.user_id)
-        params = {'max_results': 100}
+        # Tweet API V2 is harder to parse media
+        url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
+        params = {'user_id': self.user_id, 'count': 200, 'trim_user': True}
         if since_id:
             params['since_id'] = since_id
-        json_response = self.twitter_watcher.query(url, params)
-        if json_response:
-            return json_response.get('data', [])
-        return None
+        return self.twitter_watcher.query(url, params)
 
     def watch(self):
         tweet_list = self.get_tweet_list(since_id=self.last_tweet_id)
         if tweet_list is None:
             return
         for tweet in tweet_list:
-            self.send_message(convert_html_to_text(tweet['text']))
+            photo_url_list, video_url_list = parse_media_from_tweet(tweet)
+            if not photo_url_list and not video_url_list:
+                retweeted_status = tweet.get('retweeted_status', None)
+                if retweeted_status:
+                    photo_url_list, video_url_list = parse_media_from_tweet(retweeted_status)
+            self.send_message(convert_html_to_text(tweet['text']), photo_url_list, video_url_list)
         if tweet_list:
             self.last_tweet_id = tweet_list[0]['id']
         self.update_last_watch_time()

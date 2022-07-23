@@ -2,3 +2,4 @@ click
 python-telegram-bot
 retry
 tzlocal==2.1
+bs4

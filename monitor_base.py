@@ -35,17 +35,22 @@ class MonitorBase(ABC):
     def send_message(self,
                      message: str,
                      photo_url_list: Union[List[str], None] = None,
-                     disable_preview: bool = False):
+                     video_url_list: Union[List[str], None] = None,
+                     disable_preview: bool = True):
         message = '{} {}'.format(self.message_prefix, message)
         self.logger.info('Sending message: {}\n'.format(message))
         if photo_url_list:
             photo_url_list = [photo_url for photo_url in photo_url_list if photo_url]
+        if video_url_list:
+            video_url_list = [video_url for video_url in video_url_list if video_url]
         if photo_url_list:
             self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
+        if video_url_list:
+            self.logger.info('Video: {}'.format(', '.join(video_url_list)))
         if self.telegram_notifier:
-            self.telegram_notifier.send_message(message, photo_url_list, disable_preview)
+            self.telegram_notifier.send_message(message, photo_url_list, video_url_list, disable_preview)
         if self.cqhttp_notifier:
-            self.cqhttp_notifier.send_message(message, photo_url_list)
+            self.cqhttp_notifier.send_message(message, photo_url_list, video_url_list)
 
     @abstractmethod
     def watch(self):
