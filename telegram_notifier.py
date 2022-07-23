@@ -22,7 +22,8 @@ class TelegramNotifier:
 
     @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5, tries=5)
     def _send_message_to_single_chat(self, chat_id: str, message: str,
-                                     photo_url_list: Union[List[str], None], video_url_list: Union[List[str], None], disable_preview: bool):
+                                     photo_url_list: Union[List[str], None],
+                                     video_url_list: Union[List[str], None], disable_preview: bool):
         if video_url_list:
             self.bot.send_video(chat_id=chat_id,
                                 video=video_url_list[0],
@@ -52,7 +53,8 @@ class TelegramNotifier:
                      disable_preview: bool = True):
         for chat_id in self.chat_id_list:
             try:
-                self._send_message_to_single_chat(chat_id, message, photo_url_list, video_url_list, disable_preview)
+                self._send_message_to_single_chat(chat_id, message, photo_url_list, video_url_list,
+                                                  disable_preview)
             except BadRequest as e:
                 # Telegram cannot send some photos/videos for unknown reasons.
                 self.logger.error('{}, trying to send message without media.'.format(e))

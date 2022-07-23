@@ -49,8 +49,10 @@ class LikeMonitor(MonitorBase):
                 # Debug log
                 self.logger.info('Like: {}, num: {}'.format(like['id'], len(like_list)))
                 photo_url_list, video_url_list = parse_media_from_tweet(like)
-                self.send_message('@{}: {}'.format(like['user']['screen_name'],
-                                                   convert_html_to_text(like['text'])), photo_url_list, video_url_list)
+                self.send_message(
+                    '@{}: {}'.format(like['user']['screen_name'],
+                                     convert_html_to_text(like['text'])), photo_url_list,
+                    video_url_list)
         like_id_set = _get_like_id_set(like_list)
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))

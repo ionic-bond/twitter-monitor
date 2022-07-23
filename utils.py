@@ -9,8 +9,10 @@ def convert_html_to_text(html: str) -> str:
     bs = BeautifulSoup(html, "html.parser")
     return bs.get_text()
 
+
 def get_photo_url_from_media(media: dict) -> str:
     return media.get('media_url_https', '')
+
 
 def get_video_url_from_media(media: dict) -> str:
     video_info = media.get('video_info', {})
@@ -24,6 +26,7 @@ def get_video_url_from_media(media: dict) -> str:
             video_url = variant.get('url', '')
     return video_url
 
+
 def parse_media_from_tweet(tweet: dict) -> Tuple[list, list]:
     photo_url_list = []
     video_url_list = []
@@ -35,4 +38,3 @@ def parse_media_from_tweet(tweet: dict) -> Tuple[list, list]:
         elif media_type in ['video', 'animated_gif']:
             video_url_list.append(get_video_url_from_media(media))
     return photo_url_list, video_url_list
-

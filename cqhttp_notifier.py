@@ -38,7 +38,10 @@ class CqhttpNotifier:
         if response.status_code != 200:
             self.logger.error('Cqhttp send video {} error: {}'.format(video_url, response.text))
 
-    def send_message(self, message: str, photo_url_list: Union[List[str], None] = None, video_url_list: Union[List[str], None] = None):
+    def send_message(self,
+                     message: str,
+                     photo_url_list: Union[List[str], None] = None,
+                     video_url_list: Union[List[str], None] = None):
         for url in self.url_list:
             self._send_text_to_single_chat(url, message)
             if photo_url_list:
@@ -47,4 +50,3 @@ class CqhttpNotifier:
             if video_url_list:
                 for video_url in video_url_list:
                     self._send_video_to_single_chat(url, video_url)
-
