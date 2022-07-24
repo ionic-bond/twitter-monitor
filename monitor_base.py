@@ -47,11 +47,15 @@ class MonitorBase(ABC):
             self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         if video_url_list:
             self.logger.info('Video: {}'.format(', '.join(video_url_list)))
-        if self.telegram_notifier:
-            self.telegram_notifier.send_message(message, photo_url_list, video_url_list,
-                                                disable_preview)
-        if self.cqhttp_notifier:
-            self.cqhttp_notifier.send_message(message, photo_url_list, video_url_list)
+        try:
+            if self.telegram_notifier:
+                self.telegram_notifier.send_message(message, photo_url_list, video_url_list,
+                                                    disable_preview)
+            if self.cqhttp_notifier:
+                self.cqhttp_notifier.send_message(message, photo_url_list, video_url_list)
+        except Exception as e:
+            self.logger.error(e)
+            print(e)
 
     @abstractmethod
     def watch(self):
