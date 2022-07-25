@@ -7,7 +7,7 @@ from typing import List, Union
 
 import telegram
 from retry import retry
-from telegram.error import BadRequest, RetryAfter, TimedOut, NetworkError
+from telegram.error import BadRequest, RetryAfter, TimedOut
 
 
 class TelegramNotifier:
@@ -20,7 +20,7 @@ class TelegramNotifier:
         self.logger = logging.getLogger('{}'.format(logger_name))
         self.logger.info('Init telegram notifier succeed: {}'.format(str(chat_id_list)))
 
-    @retry((RetryAfter, TimedOut, NetworkError), delay=5)
+    @retry((RetryAfter, TimedOut), delay=5)
     def _send_message_to_single_chat(self, chat_id: str, message: str,
                                      photo_url_list: Union[List[str], None],
                                      video_url_list: Union[List[str], None], disable_preview: bool):
@@ -60,7 +60,7 @@ class TelegramNotifier:
                 self.logger.error('{}, trying to send message without media.'.format(e))
                 self._send_message_to_single_chat(chat_id, message, None, None, disable_preview)
 
-    @retry((BadRequest, RetryAfter, TimedOut, NetworkError), delay=5)
+    @retry((RetryAfter, TimedOut), delay=5)
     def _get_updates(self, offset=None) -> List[telegram.Update]:
         return self.bot.get_updates(offset=offset)
 
