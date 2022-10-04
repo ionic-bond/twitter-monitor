@@ -5,6 +5,7 @@ import threading
 from abc import ABC, abstractmethod
 from typing import List, Union
 
+
 class Message:
 
     def __init__(self,
@@ -28,12 +29,12 @@ class NotifierBase(ABC):
     def init(cls):
         cls.initialized = True
         cls.work_start()
-    
+
     @classmethod
     @abstractmethod
     def send_message(cls, message: Message):
         pass
-    
+
     @classmethod
     def _work(cls):
         while True:
