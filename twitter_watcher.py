@@ -23,7 +23,7 @@ class TwitterWatcher:
             self.current_token_index = (self.current_token_index + 1) % len(self.bearer_token_list)
             headers = _get_headers(self.bearer_token_list[self.current_token_index])
             try:
-                response = requests.request('GET', url, headers=headers, params=params)
+                response = requests.request('GET', url, headers=headers, params=params, timeout=300)
             except requests.exceptions.ConnectionError as e:
                 self.logger.error('Request error: {}, try next token.'.format(e))
                 continue
