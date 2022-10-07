@@ -18,7 +18,6 @@ class Message:
 
 
 class NotifierBase(ABC):
-    message_queue = queue.SimpleQueue()
     initialized = False
 
     def __new__(self):
@@ -27,6 +26,7 @@ class NotifierBase(ABC):
     @classmethod
     @abstractmethod
     def init(cls):
+        cls.message_queue = queue.SimpleQueue()
         cls.initialized = True
         cls.work_start()
 
@@ -46,5 +46,5 @@ class NotifierBase(ABC):
         threading.Thread(target=cls._work, daemon=True).start()
 
     @classmethod
-    def put_message(cls, message: Message):
+    def put_message_into_queue(cls, message: Message):
         cls.message_queue.put(message)

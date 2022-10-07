@@ -11,10 +11,11 @@ import click
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BlockingScheduler
 
+from cqhttp_notifier import CqhttpNotifier
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
 from profile_monitor import ProfileMonitor
-from telegram_notifier import TelegramNotifier
+from telegram_notifier import TelegramMessage, TelegramNotifier
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
 
@@ -38,17 +39,17 @@ def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
     logger.addHandler(file_handler)
 
 
-def _send_summary(notifier: TelegramNotifier, monitors: dict, watcher: TwitterWatcher):
+def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher):
     for modoule, data in monitors.items():
         monitor_status = {}
         for username, monitor in data.items():
             monitor_status[username] = monitor.status()
-        notifier.send_message('{}: {}'.format(modoule, json.dumps(monitor_status, indent=4)))
+        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='{}: {}'.format(modoule, json.dumps(monitor_status, indent=4))))
     token_status = watcher.check_token()
-    notifier.send_message('Token status: {}'.format(json.dumps(token_status, indent=4)))
+    TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='Token status: {}'.format(json.dumps(token_status, indent=4))))
 
 
-def _check_monitors_status(notifier: TelegramNotifier, monitors: dict):
+def _check_monitors_status(telegram_chat_id: str, monitors: dict):
     time_threshold = datetime.utcnow() - timedelta(minutes=30)
     alerts = []
     for modoule, data in monitors.items():
@@ -59,7 +60,7 @@ def _check_monitors_status(notifier: TelegramNotifier, monitors: dict):
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
-        notifier.send_message('Alert: \n{}'.format('\n'.join(alerts)))
+        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='Alert: \n{}'.format('\n'.join(alerts))))
 
 
 @click.group()
@@ -90,6 +91,11 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
     with open(os.path.join(monitoring_config_path), 'r') as monitoring_config_file:
         monitoring_config = json.load(monitoring_config_file)
         assert monitoring_config['monitoring_user_list']
+
+    _setup_logger('telegram', os.path.join(log_dir, 'telegram'))
+    _setup_logger('cqhttp', os.path.join(log_dir, 'cqhttp'))
+    TelegramNotifier.init(token=token_config['telegram_bot_token'], logger_name='telegram')
+    CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
 
     weight_sum_offset = monitoring_config.get('weight_sum_offset', 0)
     profile_weight_sum = weight_sum_offset
@@ -135,25 +141,24 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                                   seconds=intervals[monitor_type][username])
 
     if monitoring_config['maintainer_chat_id']:
-        telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'],
-                                             [monitoring_config['maintainer_chat_id']],
-                                             'Maintainer-Scheduler')
+        # maintainer_chat_id should be telegram chat id.
+        maintainer_chat_id = monitoring_config['maintainer_chat_id']
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        telegram_notifier.send_message('Interval: {}'.format(json.dumps(intervals, indent=4)))
-        _send_summary(telegram_notifier, monitors, twitter_watcher)
+        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Interval: {}'.format(json.dumps(intervals, indent=4))))
+        _send_summary(maintainer_chat_id, monitors, twitter_watcher)
         if confirm:
-            if not telegram_notifier.confirm('Please confirm the initialization information'):
-                telegram_notifier.send_message('Monitor will exit now.')
+            if not TelegramNotifier.confirm(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Please confirm the initialization information')):
+                TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor will exit now.'))
                 raise RuntimeError('Initialization information confirm error')
-            telegram_notifier.send_message('Monitor initialization succeeded.')
+            TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor initialization succeeded.'))
         scheduler.add_job(_send_summary,
                           trigger='cron',
                           hour='6',
-                          args=[telegram_notifier, monitors, twitter_watcher])
+                          args=[maintainer_chat_id, monitors, twitter_watcher])
         scheduler.add_job(_check_monitors_status,
                           trigger='cron',
                           hour='*',
-                          args=[telegram_notifier, monitors])
+                          args=[maintainer_chat_id, monitors])
 
     scheduler.start()
 
@@ -170,9 +175,8 @@ def check_token(token_config_path, telegram_chat_id):
     result = json.dumps(twitter_watcher.check_token(), indent=4)
     print(result)
     if telegram_chat_id:
-        telegram_notifier = TelegramNotifier(token_config['telegram_bot_token'], [telegram_chat_id],
-                                             '')
-        telegram_notifier.send_message(result)
+        TelegramNotifier.init(token_config['telegram_bot_token'], '')
+        TelegramNotifier.send_message(TelegramMessage(chat_id_list=[telegram_chat_id], text=result))
 
 
 if __name__ == '__main__':

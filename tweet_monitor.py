@@ -10,7 +10,7 @@ class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[int],
                  cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,

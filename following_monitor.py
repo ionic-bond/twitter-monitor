@@ -9,7 +9,7 @@ class FollowingMonitor(MonitorBase):
     monitor_type = 'Following'
     rate_limit = 1
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[str],
+    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[int],
                  cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
@@ -83,8 +83,7 @@ class FollowingMonitor(MonitorBase):
                 if details_str:
                     message += '\n{}'.format(details_str)
                 self.send_message(message=message,
-                                  photo_url_list=[profile_image_url] if profile_image_url else [],
-                                  disable_preview=True)
+                                  photo_url_list=[profile_image_url] if profile_image_url else [])
         if inc_user_ids:
             self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
@@ -93,8 +92,7 @@ class FollowingMonitor(MonitorBase):
                 if details_str:
                     message += '\n{}'.format(details_str)
                 self.send_message(message=message,
-                                  photo_url_list=[profile_image_url] if profile_image_url else [],
-                                  disable_preview=True)
+                                  photo_url_list=[profile_image_url] if profile_image_url else [])
 
     def watch(self):
         following_dict = self.get_all_following(self.user_id)
