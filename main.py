@@ -44,9 +44,13 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
         monitor_status = {}
         for username, monitor in data.items():
             monitor_status[username] = monitor.status()
-        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='{}: {}'.format(modoule, json.dumps(monitor_status, indent=4))))
+        TelegramNotifier.put_message_into_queue(
+            TelegramMessage(chat_id_list=[telegram_chat_id],
+                            text='{}: {}'.format(modoule, json.dumps(monitor_status, indent=4))))
     token_status = watcher.check_token()
-    TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='Token status: {}'.format(json.dumps(token_status, indent=4))))
+    TelegramNotifier.put_message_into_queue(
+        TelegramMessage(chat_id_list=[telegram_chat_id],
+                        text='Token status: {}'.format(json.dumps(token_status, indent=4))))
 
 
 def _check_monitors_status(telegram_chat_id: str, monitors: dict):
@@ -60,7 +64,9 @@ def _check_monitors_status(telegram_chat_id: str, monitors: dict):
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
-        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[telegram_chat_id], text='Alert: \n{}'.format('\n'.join(alerts))))
+        TelegramNotifier.put_message_into_queue(
+            TelegramMessage(chat_id_list=[telegram_chat_id],
+                            text='Alert: \n{}'.format('\n'.join(alerts))))
 
 
 @click.group()
@@ -144,13 +150,21 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
         # maintainer_chat_id should be telegram chat id.
         maintainer_chat_id = monitoring_config['maintainer_chat_id']
         twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
-        TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Interval: {}'.format(json.dumps(intervals, indent=4))))
+        TelegramNotifier.put_message_into_queue(
+            TelegramMessage(chat_id_list=[maintainer_chat_id],
+                            text='Interval: {}'.format(json.dumps(intervals, indent=4))))
         _send_summary(maintainer_chat_id, monitors, twitter_watcher)
         if confirm:
-            if not TelegramNotifier.confirm(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Please confirm the initialization information')):
-                TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor will exit now.'))
+            if not TelegramNotifier.confirm(
+                    TelegramMessage(chat_id_list=[maintainer_chat_id],
+                                    text='Please confirm the initialization information')):
+                TelegramNotifier.put_message_into_queue(
+                    TelegramMessage(chat_id_list=[maintainer_chat_id],
+                                    text='Monitor will exit now.'))
                 raise RuntimeError('Initialization information confirm error')
-            TelegramNotifier.put_message_into_queue(TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor initialization succeeded.'))
+            TelegramNotifier.put_message_into_queue(
+                TelegramMessage(chat_id_list=[maintainer_chat_id],
+                                text='Monitor initialization succeeded.'))
         scheduler.add_job(_send_summary,
                           trigger='cron',
                           hour='6',

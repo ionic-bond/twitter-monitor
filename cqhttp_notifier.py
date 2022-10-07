@@ -50,8 +50,7 @@ class CqhttpNotifier(NotifierBase):
             cls.logger.error('Cqhttp send video {} error: {}'.format(video_url, response.text))
 
     @classmethod
-    def send_message(cls,
-                     message: CqhttpMessage):
+    def send_message(cls, message: CqhttpMessage):
         assert cls.initialized
         assert isinstance(message, CqhttpMessage)
         for url in message.url_list:

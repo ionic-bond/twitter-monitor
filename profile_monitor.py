@@ -135,13 +135,13 @@ class ProfileMonitor(MonitorBase):
 
         result = self.username.push(parser.username)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Username', result['old'],
-                                                              result['new']))
+            self.send_message(
+                message=MESSAGE_TEMPLATE.format('Username', result['old'], result['new']))
 
         result = self.location.push(parser.location)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Location', result['old'],
-                                                              result['new']))
+            self.send_message(
+                message=MESSAGE_TEMPLATE.format('Location', result['old'], result['new']))
 
         result = self.bio.push(parser.bio)
         if result:
@@ -149,8 +149,8 @@ class ProfileMonitor(MonitorBase):
 
         result = self.website.push(parser.website)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Website', result['old'],
-                                                              result['new']))
+            self.send_message(
+                message=MESSAGE_TEMPLATE.format('Website', result['old'], result['new']))
 
         result = self.followers_count.push(parser.followers_count)
 
