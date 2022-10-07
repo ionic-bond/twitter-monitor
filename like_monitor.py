@@ -12,16 +12,23 @@ from utils import convert_html_to_text, parse_media_from_tweet
 def _get_like_id_set(like_list: list) -> Set[str]:
     return set(like['id'] for like in like_list)
 
+def _get_max_k_set(like_id_set: Set[str], k: int) -> Set[str]:
+    like_id_list = list(like_id_set)
+    like_id_list.sort()
+    return set(like_id_list[-k:])
+
 
 class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     rate_limit = 5
+    like_id_set_max_size = 1000
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[int],
+    def __init__(self, username: str, token_config: dict, cache_dir: str, telegram_chat_id_list: List[int],
                  cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
+                         cache_dir=cache_dir,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
@@ -30,6 +37,13 @@ class LikeMonitor(MonitorBase):
             like_list = self.get_like_list()
         self.existing_like_id_set = _get_like_id_set(like_list)
         self.min_like_id = min(self.existing_like_id_set) if self.existing_like_id_set else 0
+
+        cache_like_id_list = self.load_from_cache()
+        if cache_like_id_list:
+            self.existing_like_id_set |= set(cache_like_id_list)
+            self.logger.info('Loaded {} like ids from cache.'.format(len(cache_like_id_list)))
+        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set, LikeMonitor.like_id_set_max_size)
+        self.dump_to_cache(list(self.existing_like_id_set))
 
         self.logger.info('Init like monitor succeed.\nUser id: {}\nExisting likes: {}'.format(
             self.user_id, self.existing_like_id_set))
@@ -56,6 +70,8 @@ class LikeMonitor(MonitorBase):
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))
         self.existing_like_id_set |= like_id_set
+        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set, LikeMonitor.like_id_set_max_size)
+        self.dump_to_cache(list(self.existing_like_id_set))
         self.update_last_watch_time()
 
     def status(self) -> str:

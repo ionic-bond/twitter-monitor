@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Union
@@ -10,12 +12,13 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, token_config: dict,
+    def __init__(self, monitor_type: str, username: str, token_config: dict, cache_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         self.twitter_watcher = TwitterWatcher(token_config['twitter_bearer_token_list'])
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)
+        self.cache_file_path = '{}/{}-{}'.format(cache_dir, username, monitor_type)
         self.telegram_chat_id_list = telegram_chat_id_list
         self.cqhttp_url_list = cqhttp_url_list
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)
@@ -62,3 +65,13 @@ class MonitorBase(ABC):
     @abstractmethod
     def status(self) -> str:
         pass
+
+    def dump_to_cache(self, data):
+        with open(self.cache_file_path, 'w') as cache_file:
+            json.dump(data, cache_file, indent=4)
+
+    def load_from_cache(self):
+        if not os.path.exists(self.cache_file_path):
+            return None
+        with open(self.cache_file_path, 'r') as cache_file:
+            return json.load(cache_file)

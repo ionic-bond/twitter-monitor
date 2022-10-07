@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 # This repo
+cache
 log
 config/*.json

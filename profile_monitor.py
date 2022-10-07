@@ -88,11 +88,12 @@ class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, telegram_chat_id_list: List[int],
+    def __init__(self, username: str, token_config: dict, cache_dir: str, telegram_chat_id_list: List[int],
                  cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
+                         cache_dir=cache_dir,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
@@ -119,6 +120,8 @@ class ProfileMonitor(MonitorBase):
         url = 'https://api.twitter.com/1.1/users/show.json'
         params = {'user_id': self.user_id}
         user = self.twitter_watcher.query(url, params)
+        if not user:
+            return None
         if user.get('errors', None):
             self.logger.error('\n'.join([error['message'] for error in user['errors']]))
             return None

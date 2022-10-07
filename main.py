@@ -76,14 +76,16 @@ def cli():
 
 @cli.command()
 @click.option('--log_dir', default=os.path.join(sys.path[0], 'log'))
+@click.option('--cache_dir', default=os.path.join(sys.path[0], 'cache'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option('--monitoring_config_path',
               default=os.path.join(sys.path[0], 'config/monitoring.json'))
 @click.option('--confirm/--no-confirm',
               default=False,
               help="Confirm with the maintainer during initialization")
-def run(log_dir, token_config_path, monitoring_config_path, confirm):
+def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
     os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(cache_dir, exist_ok=True)
     logging.basicConfig(filename=os.path.join(log_dir, 'main'),
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         level=logging.WARNING)
@@ -139,7 +141,7 @@ def run(log_dir, token_config_path, monitoring_config_path, confirm):
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
                 intervals[monitor_type][username] = _get_interval_second(
                     monitor_cls.rate_limit, token_number, weight, profile_weight_sum)
-                monitors[monitor_type][username] = monitor_cls(username, token_config,
+                monitors[monitor_type][username] = monitor_cls(username, token_config, cache_dir,
                                                                telegram_chat_id_list,
                                                                cqhttp_url_list)
                 scheduler.add_job(monitors[monitor_type][username].watch,
