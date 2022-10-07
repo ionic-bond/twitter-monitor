@@ -88,8 +88,8 @@ class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str, telegram_chat_id_list: List[int],
-                 cqhttp_url_list: List[str]):
+    def __init__(self, username: str, token_config: dict, cache_dir: str,
+                 telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
