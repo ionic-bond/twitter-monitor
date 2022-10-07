@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from functools import cached_property
 from typing import List, Union
 

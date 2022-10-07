@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from typing import List, Union, Tuple, Dict
 
 from monitor_base import MonitorBase

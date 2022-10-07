@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Because the twitter api only allows to query the last 200 tweets sorted by creation time,
 we cannot know if the user likes a very old tweet.

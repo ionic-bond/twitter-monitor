@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import logging
 import time
 from datetime import datetime, timezone
