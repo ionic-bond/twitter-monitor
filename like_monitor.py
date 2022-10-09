@@ -3,6 +3,9 @@ Because the twitter api only allows to query the last 200 tweets sorted by creat
 we cannot know if the user likes a very old tweet.
 """
 
+import json
+import os
+
 from typing import List, Union, Set
 
 from monitor_base import MonitorBase
@@ -32,20 +35,15 @@ class LikeMonitor(MonitorBase):
                          cache_dir=cache_dir,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
-
+        
+        self.load_existing_like_id()
         like_list = None
         while like_list is None:
             like_list = self.get_like_list()
-        self.existing_like_id_set = _get_like_id_set(like_list)
-        self.min_like_id = min(self.existing_like_id_set) if self.existing_like_id_set else 0
-
-        cache_like_id_list = self.load_from_cache()
-        if cache_like_id_list:
-            self.existing_like_id_set |= set(cache_like_id_list)
-            self.logger.info('Loaded {} like ids from cache.'.format(len(cache_like_id_list)))
-        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set,
-                                                   LikeMonitor.like_id_set_max_size)
-        self.dump_to_cache(list(self.existing_like_id_set))
+        like_id_set = _get_like_id_set(like_list)
+        self.existing_like_id_set |= like_id_set
+        self.min_like_id = min(like_id_set) if like_id_set else 0
+        self.dump_existing_like_id()
 
         self.logger.info('Init like monitor succeed.\nUser id: {}\nExisting likes: {}'.format(
             self.user_id, self.existing_like_id_set))
@@ -72,11 +70,23 @@ class LikeMonitor(MonitorBase):
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))
         self.existing_like_id_set |= like_id_set
-        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set,
-                                                   LikeMonitor.like_id_set_max_size)
-        self.dump_to_cache(list(self.existing_like_id_set))
+        self.dump_existing_like_id()
         self.update_last_watch_time()
 
     def status(self) -> str:
         return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time,
                                                    len(self.existing_like_id_set), self.min_like_id)
+
+    def dump_existing_like_id(self):
+        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set,
+                                                   LikeMonitor.like_id_set_max_size)
+        with open(self.cache_file_path, 'w') as cache_file:
+            json.dump(list(self.existing_like_id_set), cache_file, indent=4)
+
+    def load_existing_like_id(self):
+        if not os.path.exists(self.cache_file_path):
+            self.existing_like_id_set = set()
+            return
+        with open(self.cache_file_path, 'r') as cache_file:
+            self.existing_like_id_set = set(json.load(cache_file))
+            self.logger.info('Loaded {} like ids from cache.'.format(len(self.existing_like_id_set)))

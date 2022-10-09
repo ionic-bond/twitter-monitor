@@ -1,6 +1,4 @@
-import json
 import logging
-import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Union
@@ -65,13 +63,3 @@ class MonitorBase(ABC):
     @abstractmethod
     def status(self) -> str:
         pass
-
-    def dump_to_cache(self, data):
-        with open(self.cache_file_path, 'w') as cache_file:
-            json.dump(data, cache_file, indent=4)
-
-    def load_from_cache(self):
-        if not os.path.exists(self.cache_file_path):
-            return None
-        with open(self.cache_file_path, 'r') as cache_file:
-            return json.load(cache_file)
