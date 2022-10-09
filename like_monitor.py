@@ -35,7 +35,7 @@ class LikeMonitor(MonitorBase):
                          cache_dir=cache_dir,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
-        
+
         self.load_existing_like_id()
         like_list = None
         while like_list is None:
@@ -89,4 +89,5 @@ class LikeMonitor(MonitorBase):
             return
         with open(self.cache_file_path, 'r') as cache_file:
             self.existing_like_id_set = set(json.load(cache_file))
-            self.logger.info('Loaded {} like ids from cache.'.format(len(self.existing_like_id_set)))
+            self.logger.info('Loaded {} like ids from cache.'.format(len(
+                self.existing_like_id_set)))
