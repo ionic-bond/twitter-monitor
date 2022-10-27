@@ -59,11 +59,6 @@ class FollowingMonitor(MonitorBase):
         details_str += '\nFollowing: {}'.format(public_metrics.get('following_count', -1))
         details_str += '\nFollowers: {}'.format(public_metrics.get('followers_count', -1))
         details_str += '\nTweets: {}'.format(public_metrics.get('tweet_count', -1))
-        if public_metrics.get('following_count', 2000) < 2000:
-            following_dict = None
-            while following_dict is None:
-                following_dict = self.get_all_following(user_id)
-            details_str += '\nFollow each other: {}'.format(self.user_id in following_dict.keys())
         return details_str, data.get('profile_image_url', '').replace('_normal', '')
 
     def detect_changes(self, old_following_dict: set, new_following_dict: set):
