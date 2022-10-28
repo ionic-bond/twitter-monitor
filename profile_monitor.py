@@ -94,7 +94,7 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
     # It is 60 in the documentation, but it is found to be insufficient in actual use.
-    rate_limit = 30
+    rate_limit = 20
 
     def __init__(self, username: str, token_config: dict, cache_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):

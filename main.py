@@ -113,7 +113,7 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
     for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
         monitors[monitor_cls.monitor_type] = dict()
     intervals = dict()
-    executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)}
+    executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']))}
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         username = monitoring_user['username']
