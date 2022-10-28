@@ -130,8 +130,8 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
                                                                telegram_chat_id_list,
                                                                cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
-                    intervals[username] = _get_interval_second(
-                        monitor_cls.rate_limit, token_number, weight, weight_sum)
+                    intervals[username] = _get_interval_second(monitor_cls.rate_limit, token_number,
+                                                               weight, weight_sum)
                     scheduler.add_job(monitors[monitor_type][username].watch,
                                       trigger='interval',
                                       seconds=intervals[username])

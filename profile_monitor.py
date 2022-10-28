@@ -7,7 +7,9 @@ from monitor_base import MonitorBase, MonitorCaller
 from tweet_monitor import TweetMonitor
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
-SUB_MONITOR_LIST = [FollowingMonitor.monitor_type, LikeMonitor.monitor_type, TweetMonitor.monitor_type]
+SUB_MONITOR_LIST = [
+    FollowingMonitor.monitor_type, LikeMonitor.monitor_type, TweetMonitor.monitor_type
+]
 
 
 class ProfileParser():
@@ -198,7 +200,8 @@ class ProfileMonitor(MonitorBase):
         for sub_monitor in SUB_MONITOR_LIST:
             if not self.sub_monitor_up_to_date[sub_monitor]:
                 self.logger.info('Sub monitor {} not up to date, call it now.'.format(sub_monitor))
-                self.sub_monitor_up_to_date[sub_monitor] = MonitorCaller.call(monitor_type=sub_monitor, username=self.original_username)
+                self.sub_monitor_up_to_date[sub_monitor] = MonitorCaller.call(
+                    monitor_type=sub_monitor, username=self.original_username)
 
     def watch(self) -> bool:
         user = self.get_user()
