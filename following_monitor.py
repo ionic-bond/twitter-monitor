@@ -1,3 +1,4 @@
+import time
 from typing import List, Union, Tuple, Dict
 
 from monitor_base import MonitorBase
@@ -16,8 +17,9 @@ class FollowingMonitor(MonitorBase):
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
-        self.following_dict = None
+        self.following_dict = self.get_all_following(self.user_id)
         while self.following_dict is None:
+            time.sleep(10)
             self.following_dict = self.get_all_following(self.user_id)
 
         self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing users: {}'.format(

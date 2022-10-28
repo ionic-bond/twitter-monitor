@@ -1,3 +1,4 @@
+import time
 from typing import List, Union
 
 from monitor_base import MonitorBase
@@ -17,8 +18,9 @@ class TweetMonitor(MonitorBase):
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
-        tweet_list = None
+        tweet_list = self.get_tweet_list()
         while tweet_list is None:
+            time.sleep(10)
             tweet_list = self.get_tweet_list()
         self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
 

@@ -5,6 +5,7 @@ we cannot know if the user likes a very old tweet.
 
 import json
 import os
+import time
 
 from typing import List, Union, Set
 
@@ -37,8 +38,9 @@ class LikeMonitor(MonitorBase):
                          cqhttp_url_list=cqhttp_url_list)
 
         self.load_existing_like_id()
-        like_list = None
+        like_list = self.get_like_list()
         while like_list is None:
+            time.sleep(10)
             like_list = self.get_like_list()
         like_id_set = _get_like_id_set(like_list)
         self.existing_like_id_set |= like_id_set

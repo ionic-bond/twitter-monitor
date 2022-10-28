@@ -1,3 +1,4 @@
+import time
 from functools import cached_property
 from typing import List, Union
 
@@ -103,8 +104,9 @@ class ProfileMonitor(MonitorBase):
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
-        user = None
+        user = self.get_user()
         while not user:
+            time.sleep(10)
             user = self.get_user()
         parser = ProfileParser(user)
         self.name = ElementBuffer(parser.name)
