@@ -14,6 +14,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from cqhttp_notifier import CqhttpNotifier
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
+from monitor_base import MonitorCaller
 from profile_monitor import ProfileMonitor
 from telegram_notifier import TelegramMessage, TelegramNotifier
 from tweet_monitor import TweetMonitor
@@ -28,7 +29,7 @@ CONFIG_FIELD_TO_MONITOR = {
 
 
 def _get_interval_second(limit_per_minute: int, token_number: int, widget: int, widget_sum: int):
-    return max(10, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
+    return max(15, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
 
 
 def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
@@ -56,11 +57,9 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
 def _check_monitors_status(telegram_chat_id: str, monitors: dict):
     time_threshold = datetime.utcnow() - timedelta(minutes=30)
     alerts = []
-    for modoule, data in monitors.items():
-        for username, monitor in data.items():
-            if monitor.last_watch_time < time_threshold:
-                alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
     for username, monitor in monitors[ProfileMonitor.monitor_type].items():
+        if monitor.last_watch_time < time_threshold:
+            alerts.append('{}: {}'.format(username, monitor.last_watch_time))
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
@@ -105,27 +104,15 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
     TelegramNotifier.init(token=token_config['telegram_bot_token'], logger_name='telegram')
     CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
 
-    weight_sum_offset = monitoring_config.get('weight_sum_offset', 0)
-    profile_weight_sum = weight_sum_offset
-    following_weight_sum = weight_sum_offset
-    like_weight_sum = weight_sum_offset
-    tweet_weight_sum = weight_sum_offset
+    weight_sum = monitoring_config.get('weight_sum_offset', 0)
     for monitoring_user in monitoring_config['monitoring_user_list']:
-        if monitoring_user.get('monitoring_profile', False):
-            profile_weight_sum += monitoring_user['weight']
-        if monitoring_user.get('monitoring_following', False):
-            following_weight_sum += monitoring_user['weight']
-        if monitoring_user.get('monitoring_like', False):
-            like_weight_sum += monitoring_user['weight']
-        if monitoring_user.get('monitoring_tweet', False):
-            tweet_weight_sum += monitoring_user['weight']
+        weight_sum += monitoring_user['weight']
 
     token_number = len(token_config['twitter_bearer_token_list'])
     monitors = dict()
-    intervals = dict()
     for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
         monitors[monitor_cls.monitor_type] = dict()
-        intervals[monitor_cls.monitor_type] = dict()
+    intervals = dict()
     executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']) * 3)}
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
@@ -135,18 +122,21 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
         assert telegram_chat_id_list or cqhttp_url_list
         weight = monitoring_user['weight']
         for config_field, monitor_cls in CONFIG_FIELD_TO_MONITOR.items():
-            if monitoring_user.get(config_field, False):
+            if monitoring_user.get(config_field, False) or monitor_cls is ProfileMonitor:
                 monitor_type = monitor_cls.monitor_type
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-                intervals[monitor_type][username] = _get_interval_second(
-                    monitor_cls.rate_limit, token_number, weight, profile_weight_sum)
                 monitors[monitor_type][username] = monitor_cls(username, token_config, cache_dir,
                                                                telegram_chat_id_list,
                                                                cqhttp_url_list)
-                scheduler.add_job(monitors[monitor_type][username].watch,
-                                  trigger='interval',
-                                  seconds=intervals[monitor_type][username])
+                if monitor_cls is ProfileMonitor:
+                    intervals[username] = _get_interval_second(
+                        monitor_cls.rate_limit, token_number, weight, weight_sum)
+                    scheduler.add_job(monitors[monitor_type][username].watch,
+                                      trigger='interval',
+                                      seconds=intervals[username])
+    _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
+    MonitorCaller.init(monitors=monitors)
 
     if monitoring_config['maintainer_chat_id']:
         # maintainer_chat_id should be telegram chat id.

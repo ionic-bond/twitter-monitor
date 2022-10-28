@@ -1,9 +1,13 @@
 from functools import cached_property
 from typing import List, Union
 
-from monitor_base import MonitorBase
+from following_monitor import FollowingMonitor
+from like_monitor import LikeMonitor
+from monitor_base import MonitorBase, MonitorCaller
+from tweet_monitor import TweetMonitor
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
+SUB_MONITOR_LIST = [FollowingMonitor.monitor_type, LikeMonitor.monitor_type, TweetMonitor.monitor_type]
 
 
 class ProfileParser():
@@ -113,6 +117,11 @@ class ProfileMonitor(MonitorBase):
         self.profile_image_url = ElementBuffer(parser.profile_image_url)
         self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
 
+        self.original_username = username
+        self.sub_monitor_up_to_date = {}
+        for sub_monitor in SUB_MONITOR_LIST:
+            self.sub_monitor_up_to_date[sub_monitor] = True
+
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
     def get_user(self) -> Union[dict, None]:
@@ -159,14 +168,19 @@ class ProfileMonitor(MonitorBase):
         if result:
             self.logger.info(
                 MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            self.sub_monitor_up_to_date[FollowingMonitor.monitor_type] = False
 
         result = self.like_count.push(parser.like_count)
         if result:
             self.logger.info(MESSAGE_TEMPLATE.format('Like count', result['old'], result['new']))
+            if result['new'] > result['old']:
+                self.sub_monitor_up_to_date[LikeMonitor.monitor_type] = False
 
         result = self.tweet_count.push(parser.tweet_count)
         if result:
             self.logger.info(MESSAGE_TEMPLATE.format('Tweet count', result['old'], result['new']))
+            if result['new'] > result['old']:
+                self.sub_monitor_up_to_date[TweetMonitor.monitor_type] = False
 
         result = self.profile_image_url.push(parser.profile_image_url)
         if result:
@@ -180,12 +194,20 @@ class ProfileMonitor(MonitorBase):
                                                               result['new']),
                               photo_url_list=[result['old'], result['new']])
 
-    def watch(self):
+    def watch_sub_monitor(self):
+        for sub_monitor in SUB_MONITOR_LIST:
+            if not self.sub_monitor_up_to_date[sub_monitor]:
+                self.logger.info('Sub monitor {} not up to date, call it now.'.format(sub_monitor))
+                self.sub_monitor_up_to_date[sub_monitor] = MonitorCaller.call(monitor_type=sub_monitor, username=self.original_username)
+
+    def watch(self) -> bool:
         user = self.get_user()
         if not user:
-            return
+            return False
         self.detect_change_and_update(user)
+        self.watch_sub_monitor()
         self.update_last_watch_time()
+        return True
 
     def status(self) -> str:
         return 'Last: {}, username: {}'.format(self.last_watch_time, self.username.element)

@@ -57,9 +57,32 @@ class MonitorBase(ABC):
             print(e)
 
     @abstractmethod
-    def watch(self):
+    def watch(self) -> bool:
         pass
 
     @abstractmethod
     def status(self) -> str:
         pass
+
+
+class MonitorCaller():
+    monitors = None
+
+    def __new__(self):
+        raise Exception('Do not instantiate this class!')
+
+    @classmethod
+    def init(cls, monitors: dict):
+        cls.monitors = monitors
+        cls.logger = logging.getLogger('monitor-caller')
+
+    @classmethod
+    def call(cls, monitor_type: str, username: str) -> bool:
+        assert cls.monitors is not None
+        monitors_by_type = cls.monitors.get(monitor_type, None)
+        assert monitors_by_type is not None
+        monitor = monitors_by_type.get(username, None)
+        if not monitor:
+            cls.logger.warning('Monitor {} {} not found.'.format(monitor_type, username))
+            return True
+        return monitor.watch()

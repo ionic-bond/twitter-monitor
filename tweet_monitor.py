@@ -33,10 +33,10 @@ class TweetMonitor(MonitorBase):
             params['since_id'] = since_id
         return self.twitter_watcher.query(url, params)
 
-    def watch(self):
+    def watch(self) -> bool:
         tweet_list = self.get_tweet_list(since_id=self.last_tweet_id)
         if tweet_list is None:
-            return
+            return False
         for tweet in tweet_list:
             photo_url_list, video_url_list = parse_media_from_tweet(tweet)
             if not photo_url_list and not video_url_list:
@@ -47,6 +47,7 @@ class TweetMonitor(MonitorBase):
         if tweet_list:
             self.last_tweet_id = tweet_list[0]['id']
         self.update_last_watch_time()
+        return True
 
     def status(self) -> str:
         return 'Last: {}, id: {}'.format(self.last_watch_time, self.last_tweet_id)

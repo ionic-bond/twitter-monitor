@@ -88,13 +88,14 @@ class FollowingMonitor(MonitorBase):
                 self.send_message(message=message,
                                   photo_url_list=[profile_image_url] if profile_image_url else [])
 
-    def watch(self):
+    def watch(self) -> bool:
         following_dict = self.get_all_following(self.user_id)
         if not following_dict:
-            return
+            return False
         self.detect_changes(self.following_dict, following_dict)
         self.following_dict = following_dict
         self.update_last_watch_time()
+        return True
 
     def status(self) -> str:
         return 'Last: {}, number: {}'.format(self.last_watch_time, len(self.following_dict))

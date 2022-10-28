@@ -53,10 +53,10 @@ class LikeMonitor(MonitorBase):
         params = {'user_id': self.user_id, 'count': 200}
         return self.twitter_watcher.query(url, params)
 
-    def watch(self):
+    def watch(self) -> bool:
         like_list = self.get_like_list()
         if like_list is None:
-            return
+            return False
         for like in reversed(like_list):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 # Debug log
@@ -72,6 +72,7 @@ class LikeMonitor(MonitorBase):
         self.existing_like_id_set |= like_id_set
         self.dump_existing_like_id()
         self.update_last_watch_time()
+        return True
 
     def status(self) -> str:
         return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time,
