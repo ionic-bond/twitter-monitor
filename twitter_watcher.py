@@ -50,7 +50,8 @@ class TwitterWatcher:
     def get_id_by_username(self, username: str):
         user = self.get_user_by_username(username, {})
         if user.get('errors', None):
-            logging.error('Initialization error, please check if username {} exists'.format(username))
+            logging.error(
+                'Initialization error, please check if username {} exists'.format(username))
             raise ValueError('\n'.join([error['detail'] for error in user['errors']]))
         return user['data']['id']
 
