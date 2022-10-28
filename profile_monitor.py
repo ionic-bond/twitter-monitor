@@ -93,7 +93,8 @@ class ElementBuffer():
 
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
-    rate_limit = 60
+    # It is 60 in the documentation, but it is found to be insufficient in actual use.
+    rate_limit = 30
 
     def __init__(self, username: str, token_config: dict, cache_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
@@ -117,7 +118,7 @@ class ProfileMonitor(MonitorBase):
         self.followers_count = ElementBuffer(parser.followers_count)
         self.following_count = ElementBuffer(parser.following_count)
         self.like_count = ElementBuffer(parser.like_count)
-        self.tweet_count = ElementBuffer(parser.tweet_count)
+        self.tweet_count = ElementBuffer(parser.tweet_count, change_threshold=1)
         self.profile_image_url = ElementBuffer(parser.profile_image_url)
         self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
 
