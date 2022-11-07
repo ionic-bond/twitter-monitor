@@ -1,6 +1,5 @@
 {
     "telegram_bot_token": "",
-    "cqhttp_access_token": "",
     "twitter_bearer_token_list": [
         "",
         ""

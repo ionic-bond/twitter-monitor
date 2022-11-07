@@ -5,7 +5,6 @@
         {
             "username": "Twitter",
             "telegram_chat_id_list": [1034977773],
-            "cqhttp_url_list": ["http://127.0.0.1:5700/send_guild_channel_msg?guild_id=81653781638615779&channel_id=1672878"],
             "weight": 2,
             "monitoring_following": true,
             "monitoring_like": true,
