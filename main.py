@@ -14,7 +14,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from cqhttp_notifier import CqhttpNotifier
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
-from monitor_base import MonitorCaller
+from monitor_base import MonitorManager
 from profile_monitor import ProfileMonitor
 from telegram_notifier import TelegramMessage, TelegramNotifier
 from tweet_monitor import TweetMonitor
@@ -55,11 +55,13 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
 
 
 def _check_monitors_status(telegram_chat_id: str, monitors: dict):
-    time_threshold = datetime.utcnow() - timedelta(minutes=30)
+    time_threshold = datetime.utcnow() - timedelta(hours=2)
     alerts = []
+    for modoule, data in monitors.items():
+        for username, monitor in data.items():
+            if monitor.last_watch_time < time_threshold:
+                alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
     for username, monitor in monitors[ProfileMonitor.monitor_type].items():
-        if monitor.last_watch_time < time_threshold:
-            alerts.append('{}: {}'.format(username, monitor.last_watch_time))
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
     if alerts:
@@ -136,7 +138,7 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
                                       trigger='interval',
                                       seconds=intervals[username])
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
-    MonitorCaller.init(monitors=monitors)
+    MonitorManager.init(monitors=monitors)
 
     if monitoring_config['maintainer_chat_id']:
         # maintainer_chat_id should be telegram chat id.

@@ -65,7 +65,7 @@ class MonitorBase(ABC):
         pass
 
 
-class MonitorCaller():
+class MonitorManager():
     monitors = None
 
     def __new__(self):
@@ -77,12 +77,16 @@ class MonitorCaller():
         cls.logger = logging.getLogger('monitor-caller')
 
     @classmethod
-    def call(cls, monitor_type: str, username: str) -> bool:
+    def get(cls, monitor_type: str, username: str) -> Union[MonitorBase, None]:
         assert cls.monitors is not None
         monitors_by_type = cls.monitors.get(monitor_type, None)
         assert monitors_by_type is not None
         monitor = monitors_by_type.get(username, None)
+        return monitor
+
+    @classmethod
+    def call(cls, monitor_type: str, username: str) -> bool:
+        monitor = cls.get(monitor_type, username)
         if not monitor:
-            cls.logger.warning('Monitor {} {} not found.'.format(monitor_type, username))
             return True
         return monitor.watch()

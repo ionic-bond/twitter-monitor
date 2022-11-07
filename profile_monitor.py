@@ -1,14 +1,15 @@
 import time
+from datetime import datetime, timedelta
 from functools import cached_property
 from typing import List, Union
 
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
-from monitor_base import MonitorBase, MonitorCaller
+from monitor_base import MonitorBase, MonitorManager
 from tweet_monitor import TweetMonitor
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
-SUB_MONITOR_LIST = [
+SUB_MONITOR_TYPE_LIST = [
     FollowingMonitor.monitor_type, LikeMonitor.monitor_type, TweetMonitor.monitor_type
 ]
 
@@ -124,8 +125,8 @@ class ProfileMonitor(MonitorBase):
 
         self.original_username = username
         self.sub_monitor_up_to_date = {}
-        for sub_monitor in SUB_MONITOR_LIST:
-            self.sub_monitor_up_to_date[sub_monitor] = True
+        for sub_monitor_type in SUB_MONITOR_TYPE_LIST:
+            self.sub_monitor_up_to_date[sub_monitor_type] = True
 
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
@@ -200,11 +201,16 @@ class ProfileMonitor(MonitorBase):
                               photo_url_list=[result['old'], result['new']])
 
     def watch_sub_monitor(self):
-        for sub_monitor in SUB_MONITOR_LIST:
-            if not self.sub_monitor_up_to_date[sub_monitor]:
-                self.logger.info('Sub monitor {} not up to date, call it now.'.format(sub_monitor))
-                self.sub_monitor_up_to_date[sub_monitor] = MonitorCaller.call(
-                    monitor_type=sub_monitor, username=self.original_username)
+        time_threshold = datetime.utcnow() - timedelta(hours=1)
+        for sub_monitor_type in SUB_MONITOR_TYPE_LIST:
+            sub_monitor = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
+            if sub_monitor and sub_monitor.last_watch_time < time_threshold:
+                self.sub_monitor_up_to_date[sub_monitor_type] = False
+
+            if not self.sub_monitor_up_to_date[sub_monitor_type]:
+                self.logger.info('Sub monitor {} not up to date, call it now.'.format(sub_monitor_type))
+                self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
+                    monitor_type=sub_monitor_type, username=self.original_username)
 
     def watch(self) -> bool:
         user = self.get_user()
