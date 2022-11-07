@@ -203,12 +203,14 @@ class ProfileMonitor(MonitorBase):
     def watch_sub_monitor(self):
         time_threshold = datetime.utcnow() - timedelta(hours=1)
         for sub_monitor_type in SUB_MONITOR_TYPE_LIST:
-            sub_monitor = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
+            sub_monitor = MonitorManager.get(monitor_type=sub_monitor_type,
+                                             username=self.original_username)
             if sub_monitor and sub_monitor.last_watch_time < time_threshold:
                 self.sub_monitor_up_to_date[sub_monitor_type] = False
 
             if not self.sub_monitor_up_to_date[sub_monitor_type]:
-                self.logger.info('Sub monitor {} not up to date, call it now.'.format(sub_monitor_type))
+                self.logger.info(
+                    'Sub monitor {} not up to date, call it now.'.format(sub_monitor_type))
                 self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
                     monitor_type=sub_monitor_type, username=self.original_username)
 
