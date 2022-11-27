@@ -43,11 +43,44 @@ Monitor the `following`, `tweet`, `like` and `profile` of a Twitter user and sen
 
 ## How to deploy
 
-I'll write this when I have time.
+### Apply for required token
 
-Feel free to contact me if you want to deploy now.
+- Twitter dev API token:
 
-Note: Need to apply for Twitter python API token. (https://developer.twitter.com/en/apply-for-access)
+  https://developer.twitter.com/en/apply-for-access
+
+- Create a Telegram bot and get token:
+
+  https://t.me/BotFather
+
+### Deploy
+
+Requires **python >= 3.8**
+
+- Clone code and install dependent pip packages
+
+  ```bash
+  git clone https://github.com/ionic-bond/twitter-monitor.git
+  cd twitter-monitor
+  pip3 install ./requirements.txt
+  ```
+
+- Copy the config templates and fill in them
+
+  ```
+  cp ./config/token.json.template ./config/token.json
+  cp ./config/monitoring.json.template ./config/monitoring.json
+  ```
+  
+  First fill in your **Twitter API bearer token** and **Telegram bot token** to `./config/token.json`
+  
+  Then you can test whether the tokens can be used by
+  
+  ```
+  python3 main.py check-token --telegram_chat_id {your_telegram_chat_id}
+  ```
+
+(writing, not finished)
 
 ## Contact me
 
