@@ -9,9 +9,7 @@ from monitor_base import MonitorBase, MonitorManager
 from tweet_monitor import TweetMonitor
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
-SUB_MONITOR_LIST = [
-    FollowingMonitor, LikeMonitor, TweetMonitor
-]
+SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
 
 
 class ProfileParser():
@@ -203,7 +201,7 @@ class ProfileMonitor(MonitorBase):
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
             # Magic
-            time_threshold = datetime.utcnow() - timedelta(minutes=(60/sub_monitor.rate_limit))
+            time_threshold = datetime.utcnow() - timedelta(minutes=(60 / sub_monitor.rate_limit))
             sub_monitor_type = sub_monitor.monitor_type
             sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type,
                                                       username=self.original_username)
