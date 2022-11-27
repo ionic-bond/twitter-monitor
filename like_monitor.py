@@ -61,8 +61,6 @@ class LikeMonitor(MonitorBase):
             return False
         for like in reversed(like_list):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
-                # Debug log
-                self.logger.info('Like: {}, num: {}'.format(like['id'], len(like_list)))
                 photo_url_list, video_url_list = parse_media_from_tweet(like)
                 self.send_message(
                     '@{}: {}'.format(like['user']['screen_name'],

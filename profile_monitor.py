@@ -9,8 +9,8 @@ from monitor_base import MonitorBase, MonitorManager
 from tweet_monitor import TweetMonitor
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
-SUB_MONITOR_TYPE_LIST = [
-    FollowingMonitor.monitor_type, LikeMonitor.monitor_type, TweetMonitor.monitor_type
+SUB_MONITOR_LIST = [
+    FollowingMonitor, LikeMonitor, TweetMonitor
 ]
 
 
@@ -125,8 +125,8 @@ class ProfileMonitor(MonitorBase):
 
         self.original_username = username
         self.sub_monitor_up_to_date = {}
-        for sub_monitor_type in SUB_MONITOR_TYPE_LIST:
-            self.sub_monitor_up_to_date[sub_monitor_type] = True
+        for sub_monitor in SUB_MONITOR_LIST:
+            self.sub_monitor_up_to_date[sub_monitor.monitor_type] = True
 
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
@@ -201,16 +201,16 @@ class ProfileMonitor(MonitorBase):
                               photo_url_list=[result['old'], result['new']])
 
     def watch_sub_monitor(self):
-        time_threshold = datetime.utcnow() - timedelta(hours=1)
-        for sub_monitor_type in SUB_MONITOR_TYPE_LIST:
-            sub_monitor = MonitorManager.get(monitor_type=sub_monitor_type,
-                                             username=self.original_username)
-            if sub_monitor and sub_monitor.last_watch_time < time_threshold:
+        for sub_monitor in SUB_MONITOR_LIST:
+            # Magic
+            time_threshold = datetime.utcnow() - timedelta(minutes=(60/sub_monitor.rate_limit))
+            sub_monitor_type = sub_monitor.monitor_type
+            sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type,
+                                                      username=self.original_username)
+            if sub_monitor_instance and sub_monitor_instance.last_watch_time < time_threshold:
                 self.sub_monitor_up_to_date[sub_monitor_type] = False
 
             if not self.sub_monitor_up_to_date[sub_monitor_type]:
-                self.logger.info(
-                    'Sub monitor {} not up to date, call it now.'.format(sub_monitor_type))
                 self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
                     monitor_type=sub_monitor_type, username=self.original_username)
 
