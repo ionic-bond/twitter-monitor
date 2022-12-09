@@ -1,6 +1,7 @@
 import queue
 import threading
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Union
 
 
@@ -25,6 +26,7 @@ class NotifierBase(ABC):
     @abstractmethod
     def init(cls):
         cls.message_queue = queue.SimpleQueue()
+        cls.last_send_time = None
         cls.initialized = True
         cls.work_start()
 
@@ -38,6 +40,7 @@ class NotifierBase(ABC):
         while True:
             message = cls.message_queue.get()
             cls.send_message(message)
+            cls.last_send_time = datetime.utcnow()
 
     @classmethod
     def work_start(cls):

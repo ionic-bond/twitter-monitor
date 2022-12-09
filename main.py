@@ -16,7 +16,7 @@ from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
 from monitor_base import MonitorManager
 from profile_monitor import ProfileMonitor
-from telegram_notifier import TelegramMessage, TelegramNotifier
+from telegram_notifier import TelegramMessage, TelegramNotifier, send_alert
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
 
@@ -54,8 +54,8 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
                         text='Token status: {}'.format(json.dumps(token_status, indent=4))))
 
 
-def _check_monitors_status(telegram_chat_id: str, monitors: dict):
-    time_threshold = datetime.utcnow() - timedelta(hours=2)
+def _check_monitors_status(telegram_token: str, telegram_chat_id: int, monitors: dict):
+    time_threshold = datetime.utcnow() - timedelta(hours=6)
     alerts = []
     for modoule, data in monitors.items():
         for username, monitor in data.items():
@@ -64,10 +64,12 @@ def _check_monitors_status(telegram_chat_id: str, monitors: dict):
     for username, monitor in monitors[ProfileMonitor.monitor_type].items():
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
+    if TelegramNotifier.last_send_time is not None and TelegramNotifier.last_send_time < time_threshold:
+        alerts.append('Telegram: {}'.format(TelegramNotifier.last_send_time))
+    if CqhttpNotifier.last_send_time is not None and CqhttpNotifier.last_send_time < time_threshold:
+        alerts.append('Cqhttp: {}'.format(CqhttpNotifier.last_send_time))
     if alerts:
-        TelegramNotifier.put_message_into_queue(
-            TelegramMessage(chat_id_list=[telegram_chat_id],
-                            text='Alert: \n{}'.format('\n'.join(alerts))))
+        send_alert(token=telegram_token, chat_id=telegram_chat_id, message='Alert: \n{}'.format('\n'.join(alerts)))
 
 
 @click.group()
@@ -166,7 +168,7 @@ def run(log_dir, cache_dir, token_config_path, monitoring_config_path, confirm):
         scheduler.add_job(_check_monitors_status,
                           trigger='cron',
                           hour='*',
-                          args=[maintainer_chat_id, monitors])
+                          args=[token_config['telegram_bot_token'], maintainer_chat_id, monitors])
 
     scheduler.start()
 
