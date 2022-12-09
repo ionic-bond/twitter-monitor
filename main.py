@@ -69,7 +69,9 @@ def _check_monitors_status(telegram_token: str, telegram_chat_id: int, monitors:
     if CqhttpNotifier.last_send_time is not None and CqhttpNotifier.last_send_time < time_threshold:
         alerts.append('Cqhttp: {}'.format(CqhttpNotifier.last_send_time))
     if alerts:
-        send_alert(token=telegram_token, chat_id=telegram_chat_id, message='Alert: \n{}'.format('\n'.join(alerts)))
+        send_alert(token=telegram_token,
+                   chat_id=telegram_chat_id,
+                   message='Alert: \n{}'.format('\n'.join(alerts)))
 
 
 @click.group()

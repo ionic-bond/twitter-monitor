@@ -104,9 +104,8 @@ class TelegramNotifier(NotifierBase):
                     return False
             time.sleep(10)
 
+
 def send_alert(token: str, chat_id: int, message: str):
     # The telegram notifier may also be wrong, so initialize the telegram bot separately.
     bot = telegram.Bot(token=token)
-    bot.send_message(chat_id=chat_id,
-                     text=message,
-                     timeout=60)
+    bot.send_message(chat_id=chat_id, text=message, timeout=60)
