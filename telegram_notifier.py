@@ -5,7 +5,7 @@ from typing import List, Union
 
 import telegram
 from retry import retry
-from telegram.error import BadRequest, RetryAfter, TimedOut
+from telegram.error import BadRequest, RetryAfter, TimedOut, NetworkError
 
 from notifier_base import Message, NotifierBase
 
@@ -32,7 +32,7 @@ class TelegramNotifier(NotifierBase):
         super().init()
 
     @classmethod
-    @retry((RetryAfter, TimedOut), delay=5)
+    @retry((RetryAfter, TimedOut, NetworkError), delay=5)
     def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str],
                                                                                          None],
                                      video_url_list: Union[List[str], None]):
