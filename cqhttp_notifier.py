@@ -27,25 +27,25 @@ class CqhttpNotifier(NotifierBase):
         super().init()
 
     @classmethod
-    def _send_text_to_single_chat(cls, url: str, text: str):
-        data = {'message': text}
+    def _post_request_to_cqhttp(cls, url: str, data: dict):
         response = requests.post(url, headers=cls.headers, data=data)
         if response.status_code != 200:
-            cls.logger.error('Cqhttp send text error: {}'.format(response.text))
+            cls.logger.error('Post request error: {}, {}\nurl: {}\ndata: {}'.format(response.status_code, response.text, url, str(data)))
+
+    @classmethod
+    def _send_text_to_single_chat(cls, url: str, text: str):
+        data = {'message': text}
+        cls._post_request_to_cqhttp(url, data)
 
     @classmethod
     def _send_photo_to_single_chat(cls, url: str, photo_url: str):
         data = {'message': '[CQ:image,file={}]'.format(photo_url)}
-        response = requests.post(url, headers=cls.headers, data=data)
-        if response.status_code != 200:
-            cls.logger.error('Cqhttp send photo {} error: {}'.format(photo_url, response.text))
+        cls._post_request_to_cqhttp(url, data)
 
     @classmethod
     def _send_video_to_single_chat(cls, url: str, video_url: str):
         data = {'message': '[CQ:video,file={}]'.format(video_url)}
-        response = requests.post(url, headers=cls.headers, data=data)
-        if response.status_code != 200:
-            cls.logger.error('Cqhttp send video {} error: {}'.format(video_url, response.text))
+        cls._post_request_to_cqhttp(url, data)
 
     @classmethod
     def send_message(cls, message: CqhttpMessage):

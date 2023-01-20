@@ -39,22 +39,18 @@ class MonitorBase(ABC):
             self.logger.info('Photo: {}'.format(', '.join(photo_url_list)))
         if video_url_list:
             self.logger.info('Video: {}'.format(', '.join(video_url_list)))
-        try:
-            if self.telegram_chat_id_list:
-                TelegramNotifier.put_message_into_queue(
-                    TelegramMessage(chat_id_list=self.telegram_chat_id_list,
-                                    text=message,
-                                    photo_url_list=photo_url_list,
-                                    video_url_list=video_url_list))
-            if self.cqhttp_url_list:
-                CqhttpNotifier.put_message_into_queue(
-                    CqhttpMessage(url_list=self.cqhttp_url_list,
-                                  text=message,
-                                  photo_url_list=photo_url_list,
-                                  video_url_list=video_url_list))
-        except Exception as e:
-            self.logger.error(e)
-            print(e)
+        if self.telegram_chat_id_list:
+            TelegramNotifier.put_message_into_queue(
+                TelegramMessage(chat_id_list=self.telegram_chat_id_list,
+                                text=message,
+                                photo_url_list=photo_url_list,
+                                video_url_list=video_url_list))
+        if self.cqhttp_url_list:
+            CqhttpNotifier.put_message_into_queue(
+                CqhttpMessage(url_list=self.cqhttp_url_list,
+                              text=message,
+                              photo_url_list=photo_url_list,
+                              video_url_list=video_url_list))
 
     @abstractmethod
     def watch(self) -> bool:

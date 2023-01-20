@@ -32,7 +32,7 @@ class TelegramNotifier(NotifierBase):
         super().init()
 
     @classmethod
-    @retry((RetryAfter, TimedOut, NetworkError), delay=5)
+    @retry((RetryAfter, TimedOut, NetworkError), delay=10, tries=30)
     def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str],
                                                                                          None],
                                      video_url_list: Union[List[str], None]):
@@ -69,7 +69,7 @@ class TelegramNotifier(NotifierBase):
                 cls._send_message_to_single_chat(chat_id, message.text, None, None)
 
     @classmethod
-    @retry((RetryAfter, TimedOut), delay=5)
+    @retry((RetryAfter, TimedOut), delay=10)
     def _get_updates(cls, offset=None) -> List[telegram.Update]:
         return cls.bot.get_updates(offset=offset)
 

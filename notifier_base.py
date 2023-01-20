@@ -39,8 +39,12 @@ class NotifierBase(ABC):
     def _work(cls):
         while True:
             message = cls.message_queue.get()
-            cls.send_message(message)
-            cls.last_send_time = datetime.utcnow()
+            try:
+                cls.send_message(message)
+                cls.last_send_time = datetime.utcnow()
+            except Exception as e:
+                print(e)
+                cls.logger.error(e)
 
     @classmethod
     def work_start(cls):
