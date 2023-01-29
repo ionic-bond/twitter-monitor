@@ -28,7 +28,7 @@ class TweetMonitor(MonitorBase):
             self.user_id, tweet_list[0]))
 
     def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
-        # Tweet API V2 is harder to parse media
+        # https://github.com/ionic-bond/twitter-monitor/issues/7
         url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
         params = {'user_id': self.user_id, 'count': 200, 'trim_user': True}
         if since_id:
