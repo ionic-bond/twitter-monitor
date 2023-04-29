@@ -84,6 +84,4 @@ Requires **python >= 3.8**
 
 ## Contact me
 
-Twitter: [@ion_desu](https://twitter.com/ion_desu)
-
 Telegram: [@ionic_bond](https://t.me/ionic_bond)
