@@ -28,19 +28,21 @@ class LikeMonitor(MonitorBase):
     rate_limit = 5
     like_id_set_max_size = 1000
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str,
+    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cache_dir=cache_dir,
+                         cookies_dir=cookies_dir,
+                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
         self.load_existing_like_id()
         like_list = self.get_like_list()
         while like_list is None:
-            time.sleep(10)
+            time.sleep(60)
             like_list = self.get_like_list()
         like_id_set = _get_like_id_set(like_list)
         self.existing_like_id_set |= like_id_set

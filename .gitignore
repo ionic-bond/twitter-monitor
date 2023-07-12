@@ -131,4 +131,5 @@ dmypy.json
 # This repo
 cache
 log
+cookies
 config/*.json

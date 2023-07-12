@@ -93,20 +93,22 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
     # It is 60 in the documentation, but it is found to be insufficient in actual use.
-    rate_limit = 20
+    rate_limit = 10
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str,
+    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cache_dir=cache_dir,
+                         cookies_dir=cookies_dir,
+                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
         user = self.get_user()
         while not user:
-            time.sleep(10)
+            time.sleep(60)
             user = self.get_user()
         parser = ProfileParser(user)
         self.name = ElementBuffer(parser.name)
@@ -136,7 +138,7 @@ class ProfileMonitor(MonitorBase):
         if not user:
             return None
         if user.get('errors', None):
-            self.logger.error('\n'.join([error['message'] for error in user['errors']]))
+            self.logger.error('\n'.join([str(error) for error in user['errors']]))
             return None
         return user
 
@@ -200,17 +202,18 @@ class ProfileMonitor(MonitorBase):
 
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
-            # Magic
-            time_threshold = datetime.utcnow() - timedelta(minutes=(60 / sub_monitor.rate_limit))
             sub_monitor_type = sub_monitor.monitor_type
             sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type,
                                                       username=self.original_username)
-            if sub_monitor_instance and sub_monitor_instance.last_watch_time < time_threshold:
-                self.sub_monitor_up_to_date[sub_monitor_type] = False
+            if sub_monitor_instance:
+                # Magic number
+                time_threshold = datetime.utcnow() - timedelta(seconds=(sub_monitor_instance.interval * 10))
+                if sub_monitor_instance.last_watch_time < time_threshold:
+                    self.sub_monitor_up_to_date[sub_monitor_type] = False
 
-            if not self.sub_monitor_up_to_date[sub_monitor_type]:
-                self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
-                    monitor_type=sub_monitor_type, username=self.original_username)
+                if not self.sub_monitor_up_to_date[sub_monitor_type]:
+                    self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
+                        monitor_type=sub_monitor_type, username=self.original_username)
 
     def watch(self) -> bool:
         user = self.get_user()

@@ -1,6 +1,10 @@
+import json
+import os
 from typing import Tuple
 
 from bs4 import BeautifulSoup
+from requests.cookies import RequestsCookieJar
+from tweepy_authlib import CookieSessionUserHandler
 
 
 def convert_html_to_text(html: str) -> str:
@@ -36,3 +40,25 @@ def parse_media_from_tweet(tweet: dict) -> Tuple[list, list]:
         elif media_type in ['video', 'animated_gif']:
             video_url_list.append(get_video_url_from_media(media))
     return photo_url_list, video_url_list
+
+
+def get_auth_handler(username: str, password: str):
+    auth_handler = CookieSessionUserHandler(screen_name=username, password=password)
+    return auth_handler
+
+
+def dump_auth_handler(auth_handler: CookieSessionUserHandler, path: str):
+    cookies = auth_handler.get_cookies()
+    with open(path, 'w') as f:
+        json.dump(cookies.get_dict(), f, ensure_ascii=False, indent=4)
+
+
+def load_auth_handler(cookie_path: str) -> CookieSessionUserHandler:
+    assert os.path.exists(cookie_path)
+    with open(cookie_path, 'r') as f:
+        cookies_dict = json.load(f)
+    cookies = RequestsCookieJar()
+    for key, value in cookies_dict.items():
+        cookies.set(key, value)
+    auth_handler = CookieSessionUserHandler(cookies=cookies)
+    return auth_handler

@@ -9,18 +9,20 @@ class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str,
+    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cache_dir=cache_dir,
+                         cookies_dir=cookies_dir,
+                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = self.get_tweet_list()
         while tweet_list is None:
-            time.sleep(10)
+            time.sleep(60)
             tweet_list = self.get_tweet_list()
         self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
 

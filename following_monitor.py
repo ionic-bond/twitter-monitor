@@ -8,60 +8,57 @@ class FollowingMonitor(MonitorBase):
     monitor_type = 'Following'
     rate_limit = 1
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str,
+    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cache_dir=cache_dir,
+                         cookies_dir=cookies_dir,
+                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
         self.following_dict = self.get_all_following(self.user_id)
         while self.following_dict is None:
-            time.sleep(10)
+            time.sleep(60)
             self.following_dict = self.get_all_following(self.user_id)
 
-        self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing users: {}'.format(
-            self.user_id, [user['username'] for user in self.following_dict.values()]))
+        self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing {} users: {}'.format(
+            self.user_id, len(self.following_dict), [user['screen_name'] for user in self.following_dict.values()]))
 
-    def get_all_following(self, user_id: str) -> Union[Dict[str, dict], None]:
-        url = 'https://api.twitter.com/2/users/{}/following'.format(user_id)
-        params = {'max_results': 1000}
+    def get_all_following(self, user_id: int) -> Union[Dict[str, dict], None]:
+        url = 'https://api.twitter.com/1.1/friends/list.json'
+        params = {'user_id': user_id, 'count': 200, 'skip_status': True, 'include_user_entities': False}
         json_response = self.twitter_watcher.query(url, params)
-        if not json_response:
+        if not json_response or json_response.get('errors', None):
             return None
-        users = json_response.get('data', [])
-        next_token = json_response.get('meta', {}).get('next_token', '')
-        while next_token:
-            params['pagination_token'] = next_token
+        users = json_response.get('users', [])
+        next_cursor = json_response.get('next_cursor', 0)
+        while next_cursor:
+            params['cursor'] = next_cursor
             json_response = self.twitter_watcher.query(url, params)
-            if not json_response:
+            if not json_response or json_response.get('errors', None):
                 return None
-            users.extend(json_response.get('data', []))
-            next_token = json_response.get('meta', {}).get('next_token', '')
+            users.extend(json_response.get('users', []))
+            next_cursor = json_response.get('next_cursor', 0)
         result = dict()
         for user in users:
             result[user['id']] = user
         return result
 
-    def get_user_details(self, user_id: str) -> Tuple[str, Union[str, None]]:
-        params = {'user.fields': 'name,description,url,created_at,public_metrics,profile_image_url'}
-        user = self.twitter_watcher.get_user_by_id(user_id, params)
+    def get_user_details(self, user_id: int) -> Tuple[str, Union[str, None]]:
+        user = self.twitter_watcher.get_user_by_id(user_id)
         if user.get('errors', None):
-            return '\n'.join([error['detail'] for error in user['errors']]), None
-        data = user['data']
-        details_str = 'Name: {}'.format(data.get('name', ''))
-        details_str += '\nBio: {}'.format(data.get('description', ''))
-        website = data.get('url', '')
-        if website:
-            details_str += '\nWebsite: {}'.format(website)
-        details_str += '\nJoined at: {}'.format(data.get('created_at', ''))
-        public_metrics = data.get('public_metrics', {})
-        details_str += '\nFollowing: {}'.format(public_metrics.get('following_count', -1))
-        details_str += '\nFollowers: {}'.format(public_metrics.get('followers_count', -1))
-        details_str += '\nTweets: {}'.format(public_metrics.get('tweet_count', -1))
-        return details_str, data.get('profile_image_url', '').replace('_normal', '')
+            return '\n'.join([str(error) for error in user['errors']]), None
+        details_str = 'Name: {}'.format(user.get('name', ''))
+        details_str += '\nBio: {}'.format(user.get('description', ''))
+        details_str += '\nWebsite: {}'.format(user.get('url', ''))
+        details_str += '\nJoined at: {}'.format(user.get('created_at', ''))
+        details_str += '\nFollowing: {}'.format(user.get('friends_count', -1))
+        details_str += '\nFollowers: {}'.format(user.get('followers_count', -1))
+        details_str += '\nTweets: {}'.format(user.get('statuses_count', -1))
+        return details_str, user.get('profile_image_url', '').replace('_normal', '')
 
     def detect_changes(self, old_following_dict: set, new_following_dict: set):
         if old_following_dict.keys() == new_following_dict.keys():
@@ -74,7 +71,7 @@ class FollowingMonitor(MonitorBase):
         if dec_user_ids:
             self.logger.info('Unfollow: {}'.format(dec_user_ids))
             for dec_user_id in dec_user_ids:
-                message = 'Unfollow: @{}'.format(old_following_dict[dec_user_id]['username'])
+                message = 'Unfollow: @{}'.format(old_following_dict[dec_user_id]['screen_name'])
                 details_str, profile_image_url = self.get_user_details(dec_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)
@@ -83,7 +80,7 @@ class FollowingMonitor(MonitorBase):
         if inc_user_ids:
             self.logger.info('Follow: {}'.format(inc_user_ids))
             for inc_user_id in inc_user_ids:
-                message = 'Follow: @{}'.format(new_following_dict[inc_user_id]['username'])
+                message = 'Follow: @{}'.format(new_following_dict[inc_user_id]['screen_name'])
                 details_str, profile_image_url = self.get_user_details(inc_user_id)
                 if details_str:
                     message += '\n{}'.format(details_str)

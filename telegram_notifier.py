@@ -1,4 +1,6 @@
 import logging
+import os
+import threading
 import time
 from datetime import datetime, timezone
 from typing import List, Union
@@ -28,6 +30,8 @@ class TelegramNotifier(NotifierBase):
         assert token
         cls.bot = telegram.Bot(token=token, request=telegram.utils.request.Request(con_pool_size=2))
         cls.logger = logging.getLogger('{}'.format(logger_name))
+        updates = cls._get_updates()
+        cls.update_offset = updates[-1].update_id + 1 if updates else None
         cls.logger.info('Init telegram notifier succeed.')
         super().init()
 
@@ -69,9 +73,16 @@ class TelegramNotifier(NotifierBase):
                 cls._send_message_to_single_chat(chat_id, message.text, None, None)
 
     @classmethod
-    @retry((RetryAfter, TimedOut), delay=10)
+    @retry((RetryAfter, TimedOut, NetworkError), delay=60)
     def _get_updates(cls, offset=None) -> List[telegram.Update]:
         return cls.bot.get_updates(offset=offset)
+
+    @classmethod
+    def _get_new_updates(cls) -> List[telegram.Update]:
+        updates = cls._get_updates(offset=cls.update_offset)
+        if updates:
+            cls.update_offset = updates[-1].update_id + 1
+        return updates
 
     @staticmethod
     def _get_new_update_offset(updates: List[telegram.Update]) -> Union[int, None]:
@@ -83,15 +94,11 @@ class TelegramNotifier(NotifierBase):
     def confirm(cls, message: TelegramMessage) -> bool:
         assert cls.initialized
         assert isinstance(message, TelegramMessage)
-        updates = cls._get_updates()
-        update_offset = cls._get_new_update_offset(updates)
         message.text = '{}\nPlease reply Y/N'.format(message.text)
         cls.put_message_into_queue(message)
         sending_time = datetime.utcnow().replace(tzinfo=timezone.utc)
         while True:
-            updates = cls._get_updates(offset=update_offset)
-            update_offset = cls._get_new_update_offset(updates)
-            for update in updates:
+            for update in cls._get_new_updates():
                 received_message = update.message
                 if received_message.date < sending_time:
                     continue
@@ -103,6 +110,27 @@ class TelegramNotifier(NotifierBase):
                 if text == 'N':
                     return False
             time.sleep(10)
+
+    @classmethod
+    def listen_exit_command(cls, chat_id: str):
+        def _listen_exit_command():
+            starting_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+            while True:
+                for update in cls._get_new_updates():
+                    received_message = update.message
+                    if received_message.date < starting_time:
+                        continue
+                    if received_message.chat.id != chat_id:
+                        continue
+                    text = received_message.text.upper()
+                    if text == 'EXIT':
+                        if cls.confirm(TelegramMessage([chat_id], 'Do you want to exit the program?')):
+                            cls.put_message_into_queue(TelegramMessage([chat_id], 'Program will exit after 5 sec.'))
+                            cls.logger.error('The program exits by the telegram command')
+                            time.sleep(5)
+                            os._exit(0)
+                time.sleep(20)
+        threading.Thread(target=_listen_exit_command, daemon=True).start()
 
 
 def send_alert(token: str, chat_id: int, message: str):
