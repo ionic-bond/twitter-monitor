@@ -10,9 +10,10 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
-                 telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
-        self.twitter_watcher = TwitterWatcher(token_config.get('twitter_bearer_token_list', []), token_config.get('twitter_auth_username_list', []), cookies_dir)
+    def __init__(self, monitor_type: str, username: str, token_config: dict, cache_dir: str, cookies_dir: str,
+                 interval: int, telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
+        self.twitter_watcher = TwitterWatcher(token_config.get('twitter_bearer_token_list', []),
+                                              token_config.get('twitter_auth_username_list', []), cookies_dir)
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)

@@ -52,7 +52,7 @@ class TwitterWatcher:
         self.logger.error('All tokens are unavailable, query fails. {}'.format(url))
         return None
 
-    def get_user_by_username(self, username: str, params: dict={}) -> dict:
+    def get_user_by_username(self, username: str, params: dict = {}) -> dict:
         url = 'https://api.twitter.com/1.1/users/show.json'
         params['screen_name'] = username
         user = self.query(url, params)
@@ -61,7 +61,7 @@ class TwitterWatcher:
             user = self.query(url, params)
         return user
 
-    def get_user_by_id(self, id: int, params: dict={}) -> dict:
+    def get_user_by_id(self, id: int, params: dict = {}) -> dict:
         url = 'https://api.twitter.com/1.1/users/show.json'
         params['user_id'] = id
         user = self.query(url, params)
@@ -73,14 +73,13 @@ class TwitterWatcher:
     def get_id_by_username(self, username: str):
         user = self.get_user_by_username(username, {})
         while user.get('errors', None):
-            self.logger.error(
-                'Initialization error, please check if username {} exists'.format(username))
+            self.logger.error('Initialization error, please check if username {} exists'.format(username))
             print('\n'.join([str(error) for error in user['errors']]))
             time.sleep(60)
             user = self.get_user_by_username(username, {})
         return user['id']
 
-    def check_tokens(self, test_username: str='Twitter', output_response: bool=False):
+    def check_tokens(self, test_username: str = 'Twitter', output_response: bool = False):
         result = dict()
         url = 'https://api.twitter.com/1.1/users/lookup.json'
         params = {'screen_name': test_username}

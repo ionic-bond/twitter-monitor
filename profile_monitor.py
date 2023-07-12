@@ -35,8 +35,7 @@ class ProfileParser():
 
     @cached_property
     def website(self) -> str:
-        return self.user.get('entities', {}).get('url', {}).get('urls',
-                                                                [{}])[0].get('expanded_url', '')
+        return self.user.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
@@ -151,13 +150,11 @@ class ProfileMonitor(MonitorBase):
 
         result = self.username.push(parser.username)
         if result:
-            self.send_message(
-                message=MESSAGE_TEMPLATE.format('Username', result['old'], result['new']))
+            self.send_message(message=MESSAGE_TEMPLATE.format('Username', result['old'], result['new']))
 
         result = self.location.push(parser.location)
         if result:
-            self.send_message(
-                message=MESSAGE_TEMPLATE.format('Location', result['old'], result['new']))
+            self.send_message(message=MESSAGE_TEMPLATE.format('Location', result['old'], result['new']))
 
         result = self.bio.push(parser.bio)
         if result:
@@ -165,15 +162,13 @@ class ProfileMonitor(MonitorBase):
 
         result = self.website.push(parser.website)
         if result:
-            self.send_message(
-                message=MESSAGE_TEMPLATE.format('Website', result['old'], result['new']))
+            self.send_message(message=MESSAGE_TEMPLATE.format('Website', result['old'], result['new']))
 
         result = self.followers_count.push(parser.followers_count)
 
         result = self.following_count.push(parser.following_count)
         if result:
-            self.logger.info(
-                MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            self.logger.info(MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
             self.sub_monitor_up_to_date[FollowingMonitor.monitor_type] = False
 
         result = self.like_count.push(parser.like_count)
@@ -190,21 +185,18 @@ class ProfileMonitor(MonitorBase):
 
         result = self.profile_image_url.push(parser.profile_image_url)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Profile image', result['old'],
-                                                              result['new']),
+            self.send_message(message=MESSAGE_TEMPLATE.format('Profile image', result['old'], result['new']),
                               photo_url_list=[result['old'], result['new']])
 
         result = self.profile_banner_url.push(parser.profile_banner_url)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'],
-                                                              result['new']),
+            self.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'], result['new']),
                               photo_url_list=[result['old'], result['new']])
 
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
             sub_monitor_type = sub_monitor.monitor_type
-            sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type,
-                                                      username=self.original_username)
+            sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
             if sub_monitor_instance:
                 # Magic number
                 time_threshold = datetime.utcnow() - timedelta(seconds=(sub_monitor_instance.interval * 10))
@@ -212,8 +204,8 @@ class ProfileMonitor(MonitorBase):
                     self.sub_monitor_up_to_date[sub_monitor_type] = False
 
                 if not self.sub_monitor_up_to_date[sub_monitor_type]:
-                    self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(
-                        monitor_type=sub_monitor_type, username=self.original_username)
+                    self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(monitor_type=sub_monitor_type,
+                                                                                        username=self.original_username)
 
     def watch(self) -> bool:
         user = self.get_user()

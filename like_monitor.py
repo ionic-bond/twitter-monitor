@@ -64,10 +64,8 @@ class LikeMonitor(MonitorBase):
         for like in reversed(like_list):
             if like['id'] not in self.existing_like_id_set and like['id'] > self.min_like_id:
                 photo_url_list, video_url_list = parse_media_from_tweet(like)
-                self.send_message(
-                    '@{}: {}'.format(like['user']['screen_name'],
-                                     convert_html_to_text(like['text'])), photo_url_list,
-                    video_url_list)
+                self.send_message('@{}: {}'.format(like['user']['screen_name'], convert_html_to_text(like['text'])),
+                                  photo_url_list, video_url_list)
         like_id_set = _get_like_id_set(like_list)
         if len(like_id_set) > 150:
             self.min_like_id = max(self.min_like_id, min(like_id_set))
@@ -77,12 +75,11 @@ class LikeMonitor(MonitorBase):
         return True
 
     def status(self) -> str:
-        return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time,
-                                                   len(self.existing_like_id_set), self.min_like_id)
+        return 'Last: {}, num: {}, min: {}'.format(self.last_watch_time, len(self.existing_like_id_set),
+                                                   self.min_like_id)
 
     def dump_existing_like_id(self):
-        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set,
-                                                   LikeMonitor.like_id_set_max_size)
+        self.existing_like_id_set = _get_max_k_set(self.existing_like_id_set, LikeMonitor.like_id_set_max_size)
         with open(self.cache_file_path, 'w') as cache_file:
             json.dump(list(self.existing_like_id_set), cache_file, indent=4)
 
@@ -92,5 +89,4 @@ class LikeMonitor(MonitorBase):
             return
         with open(self.cache_file_path, 'r') as cache_file:
             self.existing_like_id_set = set(json.load(cache_file))
-            self.logger.info('Loaded {} like ids from cache.'.format(len(
-                self.existing_like_id_set)))
+            self.logger.info('Loaded {} like ids from cache.'.format(len(self.existing_like_id_set)))

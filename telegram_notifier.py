@@ -37,27 +37,20 @@ class TelegramNotifier(NotifierBase):
 
     @classmethod
     @retry((RetryAfter, TimedOut, NetworkError), delay=10, tries=30)
-    def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str],
-                                                                                         None],
+    def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str], None],
                                      video_url_list: Union[List[str], None]):
         if video_url_list:
             cls.bot.send_video(chat_id=chat_id, video=video_url_list[0], caption=text, timeout=60)
         elif photo_url_list:
             if len(photo_url_list) == 1:
-                cls.bot.send_photo(chat_id=chat_id,
-                                   photo=photo_url_list[0],
-                                   caption=text,
-                                   timeout=60)
+                cls.bot.send_photo(chat_id=chat_id, photo=photo_url_list[0], caption=text, timeout=60)
             else:
                 media_group = [telegram.InputMediaPhoto(media=photo_url_list[0], caption=text)]
                 for photo_url in photo_url_list[1:10]:
                     media_group.append(telegram.InputMediaPhoto(media=photo_url))
                 cls.bot.send_media_group(chat_id=chat_id, media=media_group, timeout=60)
         else:
-            cls.bot.send_message(chat_id=chat_id,
-                                 text=text,
-                                 disable_web_page_preview=True,
-                                 timeout=60)
+            cls.bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True, timeout=60)
 
     @classmethod
     def send_message(cls, message: TelegramMessage):
@@ -65,8 +58,7 @@ class TelegramNotifier(NotifierBase):
         assert isinstance(message, TelegramMessage)
         for chat_id in message.chat_id_list:
             try:
-                cls._send_message_to_single_chat(chat_id, message.text, message.photo_url_list,
-                                                 message.video_url_list)
+                cls._send_message_to_single_chat(chat_id, message.text, message.photo_url_list, message.video_url_list)
             except BadRequest as e:
                 # Telegram cannot send some photos/videos for unknown reasons.
                 cls.logger.error('{}, trying to send message without media.'.format(e))
@@ -113,6 +105,7 @@ class TelegramNotifier(NotifierBase):
 
     @classmethod
     def listen_exit_command(cls, chat_id: str):
+
         def _listen_exit_command():
             starting_time = datetime.utcnow().replace(tzinfo=timezone.utc)
             while True:
@@ -130,6 +123,7 @@ class TelegramNotifier(NotifierBase):
                             time.sleep(5)
                             os._exit(0)
                 time.sleep(20)
+
         threading.Thread(target=_listen_exit_command, daemon=True).start()
 
 

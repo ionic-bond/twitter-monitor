@@ -70,9 +70,7 @@ def _check_monitors_status(telegram_token: str, telegram_chat_id: int, monitors:
     if CqhttpNotifier.last_send_time is not None and CqhttpNotifier.last_send_time < time_threshold:
         alerts.append('Cqhttp: {}'.format(CqhttpNotifier.last_send_time))
     if alerts:
-        send_alert(token=telegram_token,
-                   chat_id=telegram_chat_id,
-                   message='Alert: \n{}'.format('\n'.join(alerts)))
+        send_alert(token=telegram_token, chat_id=telegram_chat_id, message='Alert: \n{}'.format('\n'.join(alerts)))
 
 
 def _check_tokens_status(telegram_token: str, telegram_chat_id: int, watcher: TwitterWatcher):
@@ -94,21 +92,15 @@ def cli():
 @click.option('--cache_dir', default=os.path.join(sys.path[0], 'cache'))
 @click.option('--cookies_dir', default=os.path.join(sys.path[0], 'cookies'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
-@click.option('--monitoring_config_path',
-              default=os.path.join(sys.path[0], 'config/monitoring.json'))
-@click.option('--confirm',
-              is_flag=True,
-              default=False,
-              help="Confirm with the maintainer during initialization")
+@click.option('--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
+@click.option('--confirm', is_flag=True, default=False, help="Confirm with the maintainer during initialization")
 @click.option('--listen_exit_command',
               is_flag=True,
               default=False,
               help="Liten the \"exit\" command from telegram maintainer chat id")
-@click.option('--send_daily_summary',
-              is_flag=True,
-              default=False,
-              help="Send daily summary to telegram maintainer")
-def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_path, confirm, listen_exit_command, send_daily_summary):
+@click.option('--send_daily_summary', is_flag=True, default=False, help="Send daily summary to telegram maintainer")
+def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_path, confirm, listen_exit_command,
+        send_daily_summary):
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(cache_dir, exist_ok=True)
     logging.basicConfig(filename=os.path.join(log_dir, 'main'),
@@ -154,9 +146,8 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
                 monitor_interval = _get_interval_second(monitor_cls.rate_limit, token_number, weight, weight_sum)
-                monitors[monitor_type][username] = monitor_cls(username, token_config, cache_dir, cookies_dir, monitor_interval,
-                                                               telegram_chat_id_list,
-                                                               cqhttp_url_list)
+                monitors[monitor_type][username] = monitor_cls(username, token_config, cache_dir, cookies_dir,
+                                                               monitor_interval, telegram_chat_id_list, cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
                     intervals[username] = monitors[monitor_type][username].interval
                     scheduler.add_job(monitors[monitor_type][username].watch,
@@ -191,12 +182,10 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
                     TelegramMessage(chat_id_list=[maintainer_chat_id],
                                     text='Please confirm the initialization information')):
                 TelegramNotifier.put_message_into_queue(
-                    TelegramMessage(chat_id_list=[maintainer_chat_id],
-                                    text='Monitor will exit now.'))
+                    TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor will exit now.'))
                 raise RuntimeError('Initialization information confirm error')
             TelegramNotifier.put_message_into_queue(
-                TelegramMessage(chat_id_list=[maintainer_chat_id],
-                                text='Monitor initialization succeeded.'))
+                TelegramMessage(chat_id_list=[maintainer_chat_id], text='Monitor initialization succeeded.'))
         if listen_exit_command:
             TelegramNotifier.listen_exit_command(maintainer_chat_id)
 
