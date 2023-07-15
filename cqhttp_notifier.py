@@ -30,8 +30,8 @@ class CqhttpNotifier(NotifierBase):
     def _post_request_to_cqhttp(cls, url: str, data: dict):
         response = requests.post(url, headers=cls.headers, data=data)
         if response.status_code != 200 or response.json().get('status', '') != 'ok':
-            raise RuntimeError('Post request error: {}, {}\nurl: {}\ndata: {}'.format(response.status_code, response.text,
-                                                                                    url, str(data)))
+            raise RuntimeError('Post request error: {}, {}\nurl: {}\ndata: {}'.format(
+                response.status_code, response.text, url, str(data)))
 
     @classmethod
     def _send_text_to_single_chat(cls, url: str, text: str):
