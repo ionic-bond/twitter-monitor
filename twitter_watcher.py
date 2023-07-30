@@ -79,7 +79,7 @@ class TwitterWatcher:
             user = self.get_user_by_username(username, {})
         return user['id']
 
-    def check_tokens(self, test_username: str = 'Twitter', output_response: bool = False):
+    def check_tokens(self, test_username: str = 'X', output_response: bool = False):
         result = dict()
         url = 'https://api.twitter.com/1.1/users/lookup.json'
         params = {'screen_name': test_username}

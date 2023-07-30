@@ -196,7 +196,7 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
 @click.option('--cookies_dir', default=os.path.join(sys.path[0], 'cookies'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option('--telegram_chat_id')
-@click.option('--test_username', default='Twitter')
+@click.option('--test_username', default='X')
 @click.option('--output_response', is_flag=True, default=False)
 def check_tokens(cookies_dir, token_config_path, telegram_chat_id, test_username, output_response):
     with open(os.path.join(token_config_path), 'r') as token_config_file:
