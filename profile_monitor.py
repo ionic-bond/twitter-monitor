@@ -7,7 +7,7 @@ from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
 from monitor_base import MonitorBase, MonitorManager
 from tweet_monitor import TweetMonitor
-from utils import find_one
+from utils import find_one, get_content
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
 SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
@@ -16,57 +16,51 @@ SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
 class ProfileParser():
 
     def __init__(self, json_response: dict):
-        self.json_response = json_response
+        self.content = get_content(find_one(json_response, 'user'))
 
     @cached_property
     def name(self) -> str:
-        return find_one(self.json_response, 'name')
+        return self.content.get('name', '')
 
     @cached_property
     def username(self) -> str:
-        return find_one(self.json_response, 'screen_name')
+        return self.content.get('screen_name', '')
 
     @cached_property
     def location(self) -> str:
-        return find_one(self.json_response, 'location')
+        return self.content.get('location', '')
 
     @cached_property
     def bio(self) -> str:
-        return find_one(self.json_response, 'description')
+        return self.content.get('description', '')
 
     @cached_property
     def website(self) -> str:
-        entities = find_one(self.json_response, 'entities')
-        if not entities:
-            return None
-        return entities.get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+        return self.content.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
-        return find_one(self.json_response, 'followers_count')
+        return self.content.get('followers_count', 0)
 
     @cached_property
     def following_count(self) -> int:
-        return find_one(self.json_response, 'friends_count')
+        return self.content.get('friends_count', 0)
 
     @cached_property
     def like_count(self) -> int:
-        return find_one(self.json_response, 'favourites_count')
+        return self.content.get('favourites_count', 0)
 
     @cached_property
     def tweet_count(self) -> int:
-        return find_one(self.json_response, 'statuses_count')
+        return self.content.get('statuses_count', 0)
 
     @cached_property
     def profile_image_url(self) -> str:
-        profile_image_url = find_one(self.json_response, 'profile_image_url_https')
-        if profile_image_url:
-            profile_image_url = profile_image_url.replace('_normal', '')
-        return profile_image_url
+        return self.content.get('profile_image_url_https', '').replace('_normal', '')
 
     @cached_property
     def profile_banner_url(self) -> str:
-        return find_one(self.json_response, 'profile_banner_url')
+        return self.content.get('profile_banner_url', '')
 
 
 class ElementBuffer():

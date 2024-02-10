@@ -3,7 +3,7 @@ import time
 from typing import List, Union, Set
 
 from monitor_base import MonitorBase
-from utils import parse_media_from_tweet, parse_text_from_tweet, parse_username_from_tweet, find_all, find_one
+from utils import parse_media_from_tweet, parse_text_from_tweet, find_all, find_one
 
 
 def _get_like_id(like: dict) -> str:
@@ -62,7 +62,8 @@ class LikeMonitor(MonitorBase):
         for like in reversed(new_like_list):
             photo_url_list, video_url_list = parse_media_from_tweet(like)
             text = parse_text_from_tweet(like)
-            username = parse_username_from_tweet(like)
+            user = find_one(like, 'user_results')
+            username = find_one(user, 'screen_name')
             self.send_message('@{}: {}'.format(username, text), photo_url_list, video_url_list)
 
         self.update_last_watch_time()

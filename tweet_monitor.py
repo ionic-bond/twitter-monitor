@@ -1,11 +1,12 @@
 from typing import List
 
 from monitor_base import MonitorBase
-from utils import parse_media_from_tweet, parse_text_from_tweet, parse_username_from_tweet, find_all, find_one, get_content
+from utils import parse_media_from_tweet, parse_text_from_tweet, find_all, find_one, get_content
 
 
 def _verify_tweet_user_id(tweet: dict, user_id: str) -> bool:
-    return parse_username_from_tweet(tweet) == user_id
+    user = find_one(tweet, 'user_results')
+    return find_one(user, 'rest_id') == user_id
 
 
 class TweetMonitor(MonitorBase):
@@ -60,9 +61,6 @@ class TweetMonitor(MonitorBase):
             else:
                 photo_url_list, video_url_list = parse_media_from_tweet(tweet)
                 if quote:
-                    quote_photo_url_list, quote_video_url_list = parse_media_from_tweet(quote)
-                    photo_url_list.extend(quote_photo_url_list)
-                    video_url_list.extend(quote_video_url_list)
                     quote_text = get_content(quote).get('full_text', '')
                     quote_user = find_one(quote, 'user_results')
                     quote_username = get_content(quote_user).get('screen_name', '')
