@@ -44,10 +44,7 @@ class TwitterWatcher:
 
     def query(self, api_name: str, params: dict) -> Union[dict, list, None]:
         url, method, headers, features = GraphqlAPI.get_api_data(api_name)
-        params = _build_params({
-            "variables": params,
-            "features": features
-        })
+        params = _build_params({"variables": params, "features": features})
         for _ in range(self.token_number):
             self.current_token_index = (self.current_token_index + 1) % self.token_number
             try:
@@ -98,10 +95,7 @@ class TwitterWatcher:
         for auth_cookie in self.auth_cookie_list:
             try:
                 url, method, headers, features = GraphqlAPI.get_api_data('UserByScreenName')
-                params = _build_params({
-                    "variables": {'screen_name': test_username},
-                    "features": features
-                })
+                params = _build_params({"variables": {'screen_name': test_username}, "features": features})
                 auth_headers = _get_auth_headers(headers, auth_cookie)
                 response = requests.request(method=method, url=url, headers=auth_headers, params=params, timeout=300)
             except requests.exceptions.ConnectionError as e:

@@ -63,8 +63,7 @@ class LikeMonitor(MonitorBase):
             photo_url_list, video_url_list = parse_media_from_tweet(like)
             text = parse_text_from_tweet(like)
             username = parse_username_from_tweet(like)
-            self.send_message('@{}: {}'.format(username, text),
-                              photo_url_list, video_url_list)
+            self.send_message('@{}: {}'.format(username, text), photo_url_list, video_url_list)
 
         self.update_last_watch_time()
         return True

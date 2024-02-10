@@ -22,7 +22,8 @@ class FollowingMonitor(MonitorBase):
         self.following_dict = self.get_all_following(self.user_id)
 
         self.logger.info('Init following monitor succeed.\nUser id: {}\nFollowing {} users: {}'.format(
-            self.user_id, len(self.following_dict), [find_one(following, 'screen_name') for following in self.following_dict.values()]))
+            self.user_id, len(self.following_dict),
+            [find_one(following, 'screen_name') for following in self.following_dict.values()]))
 
     def get_all_following(self, user_id: int) -> Dict[str, dict]:
         api_name = 'Following'
@@ -34,7 +35,7 @@ class FollowingMonitor(MonitorBase):
             following_list = find_all(json_response, 'user_results')
             while not following_list:
                 import json
-                self.logger.error(json.dumps(json_response,indent=2))
+                self.logger.error(json.dumps(json_response, indent=2))
                 time.sleep(10)
                 json_response = self.twitter_watcher.query(api_name, params)
                 following_list = find_all(json_response, 'user_results')
@@ -54,7 +55,8 @@ class FollowingMonitor(MonitorBase):
         content = get_content(user)
         details_str = 'Name: {}'.format(content.get('name', ''))
         details_str += '\nBio: {}'.format(content.get('description', ''))
-        details_str += '\nWebsite: {}'.format(content.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', ''))
+        details_str += '\nWebsite: {}'.format(
+            content.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', ''))
         details_str += '\nJoined at: {}'.format(content.get('created_at', ''))
         details_str += '\nFollowing: {}'.format(content.get('friends_count', -1))
         details_str += '\nFollowers: {}'.format(content.get('followers_count', -1))

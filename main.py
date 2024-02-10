@@ -146,8 +146,8 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
                 monitor_interval = _get_interval_second(monitor_cls.rate_limit, token_number, weight, weight_sum)
-                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir,
-                                                               monitor_interval, telegram_chat_id_list, cqhttp_url_list)
+                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir, monitor_interval,
+                                                               telegram_chat_id_list, cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
                     intervals[username] = monitors[monitor_type][username].interval
                     scheduler.add_job(monitors[monitor_type][username].watch,

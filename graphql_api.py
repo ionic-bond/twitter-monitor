@@ -19,7 +19,8 @@ class GraphqlAPI():
 
     @classmethod
     def update_api_data(cls):
-        response = requests.get('https://github.com/fa0311/TwitterInternalAPIDocument/raw/master/docs/json/API.json', timeout=300)
+        response = requests.get('https://github.com/fa0311/TwitterInternalAPIDocument/raw/master/docs/json/API.json',
+                                timeout=300)
         if response.status_code != 200:
             cls.logger.error('Request returned an error: {} {}.'.format(response.status_code, response.text))
             return False
@@ -35,7 +36,7 @@ class GraphqlAPI():
         cls.graphql_api_data = json_data['graphql']
         cls.headers = json_data['header']
         return True
-    
+
     @classmethod
     def get_api_data(cls, api_name):
         if not cls.initialized:

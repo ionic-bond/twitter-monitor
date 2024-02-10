@@ -28,7 +28,8 @@ class TweetMonitor(MonitorBase):
             if _verify_tweet_user_id(tweet, self.user_id):
                 self.last_tweet_id = max(self.last_tweet_id, int(find_one(tweet, 'rest_id')))
 
-        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(self.user_id, self.last_tweet_id))
+        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(
+            self.user_id, self.last_tweet_id))
 
     def get_tweet_list(self) -> dict:
         api_name = 'UserTweetsAndReplies'
