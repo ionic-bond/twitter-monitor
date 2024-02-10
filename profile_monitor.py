@@ -7,6 +7,7 @@ from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
 from monitor_base import MonitorBase, MonitorManager
 from tweet_monitor import TweetMonitor
+from utils import find_one
 
 MESSAGE_TEMPLATE = '{} changed\nOld: {}\nNew: {}'
 SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
@@ -14,52 +15,58 @@ SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
 
 class ProfileParser():
 
-    def __init__(self, user: dict):
-        self.user = user
+    def __init__(self, json_response: dict):
+        self.json_response = json_response
 
     @cached_property
     def name(self) -> str:
-        return self.user.get('name', '')
+        return find_one(self.json_response, 'name')
 
     @cached_property
     def username(self) -> str:
-        return self.user.get('screen_name', '')
+        return find_one(self.json_response, 'screen_name')
 
     @cached_property
     def location(self) -> str:
-        return self.user.get('location', '')
+        return find_one(self.json_response, 'location')
 
     @cached_property
     def bio(self) -> str:
-        return self.user.get('description', '')
+        return find_one(self.json_response, 'description')
 
     @cached_property
     def website(self) -> str:
-        return self.user.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+        entities = find_one(self.json_response, 'entities')
+        if not entities:
+            return None
+        return entities.get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
-        return self.user.get('followers_count', 0)
+        return find_one(self.json_response, 'followers_count')
 
     @cached_property
     def following_count(self) -> int:
-        return self.user.get('friends_count', 0)
+        return find_one(self.json_response, 'friends_count')
 
     @cached_property
     def like_count(self) -> int:
-        return self.user.get('favourites_count', 0)
+        return find_one(self.json_response, 'favourites_count')
 
     @cached_property
     def tweet_count(self) -> int:
-        return self.user.get('statuses_count', 0)
+        return find_one(self.json_response, 'statuses_count')
 
     @cached_property
     def profile_image_url(self) -> str:
-        return self.user.get('profile_image_url', '').replace('_normal', '')
+        profile_image_url = find_one(self.json_response, 'profile_image_url_https')
+        if profile_image_url:
+            profile_image_url = profile_image_url.replace('_normal', '')
+        return profile_image_url
 
     @cached_property
     def profile_banner_url(self) -> str:
-        return self.user.get('profile_banner_url', '')
+        return find_one(self.json_response, 'profile_banner_url')
 
 
 class ElementBuffer():
@@ -91,25 +98,23 @@ class ElementBuffer():
 
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
-    # It is 60 in the documentation, but it is found to be insufficient in actual use.
     rate_limit = 10
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
+    def __init__(self, username: str, token_config: dict, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
-                         cache_dir=cache_dir,
                          cookies_dir=cookies_dir,
                          interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
-        user = self.get_user()
-        while not user:
+        json_response = self.get_user()
+        while not json_response:
             time.sleep(60)
-            user = self.get_user()
-        parser = ProfileParser(user)
+            json_response = self.get_user()
+        parser = ProfileParser(json_response)
         self.name = ElementBuffer(parser.name)
         self.username = ElementBuffer(parser.username)
         self.location = ElementBuffer(parser.location)
@@ -130,16 +135,11 @@ class ProfileMonitor(MonitorBase):
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
     def get_user(self) -> Union[dict, None]:
-        # Use v1 API because v2 API doesn't provide like_count.
-        url = 'https://api.twitter.com/1.1/users/show.json'
-        params = {'user_id': self.user_id}
-        user = self.twitter_watcher.query(url, params)
-        if not user:
+        params = {'userId': self.user_id}
+        json_response = self.twitter_watcher.query('UserByRestId', params)
+        if not find_one(json_response, 'user'):
             return None
-        if user.get('errors', None):
-            self.logger.error('\n'.join([str(error) for error in user['errors']]))
-            return None
-        return user
+        return json_response
 
     def detect_change_and_update(self, user: dict):
         parser = ProfileParser(user)

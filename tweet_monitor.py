@@ -1,54 +1,76 @@
-import time
-from typing import List, Union
+from typing import List
 
 from monitor_base import MonitorBase
-from utils import convert_html_to_text, parse_media_from_tweet
+from utils import parse_media_from_tweet, parse_text_from_tweet, parse_username_from_tweet, find_all, find_one, get_content
+
+
+def _verify_tweet_user_id(tweet: dict, user_id: str) -> bool:
+    return parse_username_from_tweet(tweet) == user_id
 
 
 class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
     rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, cache_dir: str, cookies_dir: str, interval: int,
+    def __init__(self, username: str, token_config: dict, cookies_dir: str, interval: int,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
-                         cache_dir=cache_dir,
                          cookies_dir=cookies_dir,
                          interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = self.get_tweet_list()
-        while tweet_list is None:
-            time.sleep(60)
-            tweet_list = self.get_tweet_list()
-        self.last_tweet_id = tweet_list[0]['id'] if tweet_list else 0
+        self.last_tweet_id = -1
+        for tweet in tweet_list:
+            if _verify_tweet_user_id(tweet, self.user_id):
+                self.last_tweet_id = max(self.last_tweet_id, int(find_one(tweet, 'rest_id')))
 
-        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(self.user_id, tweet_list[0]))
+        self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(self.user_id, self.last_tweet_id))
 
-    def get_tweet_list(self, since_id: str = None) -> Union[list, None]:
-        # https://github.com/ionic-bond/twitter-monitor/issues/7
-        url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
-        params = {'user_id': self.user_id, 'count': 200, 'trim_user': True}
-        if since_id:
-            params['since_id'] = since_id
-        return self.twitter_watcher.query(url, params)
+    def get_tweet_list(self) -> dict:
+        api_name = 'UserTweetsAndReplies'
+        params = {'userId': self.user_id, 'includePromotedContent': True, 'withVoice': True, 'count': 1000}
+        json_response = self.twitter_watcher.query(api_name, params)
+        if json_response is None:
+            return None
+        return find_all(json_response, 'tweet_results')
 
     def watch(self) -> bool:
-        tweet_list = self.get_tweet_list(since_id=self.last_tweet_id)
+        tweet_list = self.get_tweet_list()
         if tweet_list is None:
             return False
+
+        max_tweet_id = -1
         for tweet in tweet_list:
-            photo_url_list, video_url_list = parse_media_from_tweet(tweet)
-            if not photo_url_list and not video_url_list:
-                retweeted_status = tweet.get('retweeted_status', None)
-                if retweeted_status:
-                    photo_url_list, video_url_list = parse_media_from_tweet(retweeted_status)
-            self.send_message(convert_html_to_text(tweet['text']), photo_url_list, video_url_list)
-        if tweet_list:
-            self.last_tweet_id = tweet_list[0]['id']
+            if not _verify_tweet_user_id(tweet, self.user_id):
+                continue
+            tweet_id = int(find_one(tweet, 'rest_id'))
+            if tweet_id <= self.last_tweet_id:
+                continue
+
+            text = parse_text_from_tweet(tweet)
+            retweet = find_one(tweet, 'retweeted_status_result')
+            quote = find_one(tweet, 'quoted_status_result')
+            if retweet:
+                photo_url_list, video_url_list = parse_media_from_tweet(retweet)
+            else:
+                photo_url_list, video_url_list = parse_media_from_tweet(tweet)
+                if quote:
+                    quote_photo_url_list, quote_video_url_list = parse_media_from_tweet(quote)
+                    photo_url_list.extend(quote_photo_url_list)
+                    video_url_list.extend(quote_video_url_list)
+                    quote_text = get_content(quote).get('full_text', '')
+                    quote_user = find_one(quote, 'user_results')
+                    quote_username = get_content(quote_user).get('screen_name', '')
+                    text += '\nQuote: @{}: {}'.format(quote_username, quote_text)
+            self.send_message(text, photo_url_list, video_url_list)
+
+            max_tweet_id = max(max_tweet_id, tweet_id)
+
+        self.last_tweet_id = max(self.last_tweet_id, max_tweet_id)
         self.update_last_watch_time()
         return True
 

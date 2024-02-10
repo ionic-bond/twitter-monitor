@@ -13,6 +13,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 
 from cqhttp_notifier import CqhttpNotifier
 from following_monitor import FollowingMonitor
+from graphql_api import GraphqlAPI
 from like_monitor import LikeMonitor
 from monitor_base import MonitorManager
 from profile_monitor import ProfileMonitor
@@ -89,7 +90,6 @@ def cli():
 
 @cli.command(context_settings={'show_default': True})
 @click.option('--log_dir', default=os.path.join(sys.path[0], 'log'))
-@click.option('--cache_dir', default=os.path.join(sys.path[0], 'cache'))
 @click.option('--cookies_dir', default=os.path.join(sys.path[0], 'cookies'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option('--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
@@ -99,21 +99,19 @@ def cli():
               default=False,
               help="Liten the \"exit\" command from telegram maintainer chat id")
 @click.option('--send_daily_summary', is_flag=True, default=False, help="Send daily summary to telegram maintainer")
-def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_path, confirm, listen_exit_command,
+def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm, listen_exit_command,
         send_daily_summary):
     os.makedirs(log_dir, exist_ok=True)
-    os.makedirs(cache_dir, exist_ok=True)
     logging.basicConfig(filename=os.path.join(log_dir, 'main'),
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         level=logging.WARNING)
-    _setup_logger('twitter', os.path.join(log_dir, 'twitter-api'))
+    _setup_logger('api', os.path.join(log_dir, 'twitter-api'))
 
     with open(os.path.join(token_config_path), 'r') as token_config_file:
         token_config = json.load(token_config_file)
         telegram_bot_token = token_config.get('telegram_bot_token', '')
-        twitter_bearer_token_list = token_config.get('twitter_bearer_token_list', [])
         twitter_auth_username_list = token_config.get('twitter_auth_username_list', [])
-        assert twitter_bearer_token_list or twitter_auth_username_list
+        assert twitter_auth_username_list
     with open(os.path.join(monitoring_config_path), 'r') as monitoring_config_file:
         monitoring_config = json.load(monitoring_config_file)
         assert monitoring_config['monitoring_user_list']
@@ -123,11 +121,13 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
     TelegramNotifier.init(token=telegram_bot_token, logger_name='telegram')
     CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
 
+    GraphqlAPI.init()
+
     weight_sum = monitoring_config.get('weight_sum_offset', 0)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         weight_sum += monitoring_user['weight']
 
-    token_number = len(twitter_bearer_token_list) + len(twitter_auth_username_list)
+    token_number = len(twitter_auth_username_list)
     monitors = dict()
     for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
         monitors[monitor_cls.monitor_type] = dict()
@@ -146,7 +146,7 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
                 monitor_interval = _get_interval_second(monitor_cls.rate_limit, token_number, weight, weight_sum)
-                monitors[monitor_type][username] = monitor_cls(username, token_config, cache_dir, cookies_dir,
+                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir,
                                                                monitor_interval, telegram_chat_id_list, cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
                     intervals[username] = monitors[monitor_type][username].interval
@@ -159,7 +159,7 @@ def run(log_dir, cache_dir, cookies_dir, token_config_path, monitoring_config_pa
     if monitoring_config['maintainer_chat_id']:
         # maintainer_chat_id should be telegram chat id.
         maintainer_chat_id = monitoring_config['maintainer_chat_id']
-        twitter_watcher = TwitterWatcher(twitter_bearer_token_list, twitter_auth_username_list, cookies_dir)
+        twitter_watcher = TwitterWatcher(twitter_auth_username_list, cookies_dir)
         TelegramNotifier.put_message_into_queue(
             TelegramMessage(chat_id_list=[maintainer_chat_id],
                             text='Interval: {}'.format(json.dumps(intervals, indent=4))))
@@ -202,10 +202,10 @@ def check_tokens(cookies_dir, token_config_path, telegram_chat_id, test_username
     with open(os.path.join(token_config_path), 'r') as token_config_file:
         token_config = json.load(token_config_file)
         telegram_bot_token = token_config.get('telegram_bot_token', '')
-        twitter_bearer_token_list = token_config.get('twitter_bearer_token_list', [])
         twitter_auth_username_list = token_config.get('twitter_auth_username_list', [])
-        assert twitter_bearer_token_list or twitter_auth_username_list
-    twitter_watcher = TwitterWatcher(twitter_bearer_token_list, twitter_auth_username_list, cookies_dir)
+        assert twitter_auth_username_list
+    GraphqlAPI.init()
+    twitter_watcher = TwitterWatcher(twitter_auth_username_list, cookies_dir)
     result = json.dumps(twitter_watcher.check_tokens(test_username, output_response), indent=4)
     print(result)
     if telegram_chat_id:

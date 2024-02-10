@@ -36,7 +36,7 @@ class TelegramNotifier(NotifierBase):
         super().init()
 
     @classmethod
-    @retry((RetryAfter, TimedOut, NetworkError), delay=10, tries=30)
+    @retry((RetryAfter, TimedOut, NetworkError), delay=10, tries=10)
     def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str], None],
                                      video_url_list: Union[List[str], None]):
         if video_url_list:
