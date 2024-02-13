@@ -162,7 +162,7 @@ class ProfileMonitor(MonitorBase):
 
         result = self.following_count.push(parser.following_count)
         if result:
-            self.logger.info(MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            self.send_message(message=MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
             self.sub_monitor_up_to_date[FollowingMonitor.monitor_type] = False
 
         result = self.like_count.push(parser.like_count)
