@@ -100,7 +100,7 @@ def find_one(obj: any, key: str) -> any:
 
 
 def get_content(obj: dict) -> dict:
-    return obj.get('result', {}).get('legacy', {})
+    return find_one(obj, 'legacy')
 
 
 def get_cursor(obj: any) -> str:
