@@ -1,10 +1,9 @@
 import json
-import os
 from collections import deque
+from datetime import datetime, timezone
 from typing import Tuple
 
 from bs4 import BeautifulSoup
-from requests.cookies import RequestsCookieJar
 from tweepy_authlib import CookieSessionUserHandler
 
 
@@ -52,6 +51,13 @@ def parse_text_from_tweet(tweet: dict) -> str:
 def parse_username_from_tweet(tweet: dict) -> str:
     user = find_one(tweet, 'user_results')
     return find_one(user, 'rest_id')
+
+
+def parse_create_time_from_tweet(tweet: dict) -> datetime.time:
+    created_at = find_one(get_content(tweet), 'created_at')
+    if not created_at:
+        return datetime.fromtimestamp(0).replace(tzinfo=timezone.utc)
+    return datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
 
 
 def get_auth_handler(username: str, password: str):

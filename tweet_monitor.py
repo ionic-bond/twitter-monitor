@@ -1,7 +1,9 @@
+import time
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from monitor_base import MonitorBase
-from utils import parse_media_from_tweet, parse_text_from_tweet, find_all, find_one, get_content
+from utils import parse_media_from_tweet, parse_text_from_tweet, parse_create_time_from_tweet, find_all, find_one, get_content, convert_html_to_text
 
 
 def _verify_tweet_user_id(tweet: dict, user_id: str) -> bool:
@@ -24,6 +26,10 @@ class TweetMonitor(MonitorBase):
                          cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = self.get_tweet_list()
+        while not tweet_list:
+            time.sleep(60)
+            tweet_list = self.get_tweet_list()
+
         self.last_tweet_id = -1
         for tweet in tweet_list:
             if _verify_tweet_user_id(tweet, self.user_id):
@@ -46,13 +52,23 @@ class TweetMonitor(MonitorBase):
             return False
 
         max_tweet_id = -1
+        new_tweet_list = []
+        time_threshold = datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(minutes=5)
         for tweet in tweet_list:
             if not _verify_tweet_user_id(tweet, self.user_id):
                 continue
             tweet_id = int(find_one(tweet, 'rest_id'))
             if tweet_id <= self.last_tweet_id:
                 continue
+            if parse_create_time_from_tweet(tweet) < time_threshold:
+                continue
 
+            new_tweet_list.append(tweet)
+            max_tweet_id = max(max_tweet_id, tweet_id)
+
+        self.last_tweet_id = max(self.last_tweet_id, max_tweet_id)
+
+        for tweet in reversed(new_tweet_list):
             text = parse_text_from_tweet(tweet)
             retweet = find_one(tweet, 'retweeted_status_result')
             quote = find_one(tweet, 'quoted_status_result')
@@ -65,11 +81,10 @@ class TweetMonitor(MonitorBase):
                     quote_user = find_one(quote, 'user_results')
                     quote_username = get_content(quote_user).get('screen_name', '')
                     text += '\nQuote: @{}: {}'.format(quote_username, quote_text)
+            source = find_one(tweet, 'source')
+            text += '\nSource: {}'.format(convert_html_to_text(source))
             self.send_message(text, photo_url_list, video_url_list)
 
-            max_tweet_id = max(max_tweet_id, tweet_id)
-
-        self.last_tweet_id = max(self.last_tweet_id, max_tweet_id)
         self.update_last_watch_time()
         return True
 

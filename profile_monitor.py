@@ -192,10 +192,10 @@ class ProfileMonitor(MonitorBase):
             sub_monitor_type = sub_monitor.monitor_type
             sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
             if sub_monitor_instance:
-                # Magic number
-                time_threshold = datetime.utcnow() - timedelta(seconds=(sub_monitor_instance.interval * 10))
-                if sub_monitor_instance.last_watch_time < time_threshold:
-                    self.sub_monitor_up_to_date[sub_monitor_type] = False
+                # # Magic number
+                # time_threshold = datetime.utcnow() - timedelta(seconds=(sub_monitor_instance.interval * 10))
+                # if sub_monitor_instance.last_watch_time < time_threshold:
+                #     self.sub_monitor_up_to_date[sub_monitor_type] = False
 
                 if not self.sub_monitor_up_to_date[sub_monitor_type]:
                     self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(monitor_type=sub_monitor_type,
