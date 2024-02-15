@@ -200,6 +200,8 @@ class ProfileMonitor(MonitorBase):
                 if not self.sub_monitor_up_to_date[sub_monitor_type]:
                     self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(monitor_type=sub_monitor_type,
                                                                                         username=self.original_username)
+                else:
+                    sub_monitor_instance.update_last_watch_time()
 
     def watch(self) -> bool:
         user = self.get_user()
