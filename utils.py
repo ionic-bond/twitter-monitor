@@ -118,9 +118,11 @@ def get_cursor(obj: any) -> str:
 
 
 def check_initialized(cls_method):
+
     def wrapper(cls, *args, **kwargs):
         if cls.initialized:
             return cls_method(cls, *args, **kwargs)
         else:
             raise RuntimeError('Class has not initialized!')
+
     return wrapper
