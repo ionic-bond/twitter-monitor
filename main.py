@@ -121,8 +121,6 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
     TelegramNotifier.init(token=telegram_bot_token, logger_name='telegram')
     CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
 
-    GraphqlAPI.init()
-
     weight_sum = monitoring_config.get('weight_sum_offset', 0)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         weight_sum += monitoring_user['weight']
@@ -155,6 +153,8 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
                                       seconds=monitors[monitor_type][username].interval)
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
     MonitorManager.init(monitors=monitors)
+
+    scheduler.add_job(GraphqlAPI.update_api_data, trigger='cron', hour='0')
 
     if monitoring_config['maintainer_chat_id']:
         # maintainer_chat_id should be telegram chat id.
@@ -204,7 +204,6 @@ def check_tokens(cookies_dir, token_config_path, telegram_chat_id, test_username
         telegram_bot_token = token_config.get('telegram_bot_token', '')
         twitter_auth_username_list = token_config.get('twitter_auth_username_list', [])
         assert twitter_auth_username_list
-    GraphqlAPI.init()
     twitter_watcher = TwitterWatcher(twitter_auth_username_list, cookies_dir)
     result = json.dumps(twitter_watcher.check_tokens(test_username, output_response), indent=4)
     print(result)

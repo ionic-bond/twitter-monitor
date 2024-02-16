@@ -115,3 +115,12 @@ def get_cursor(obj: any) -> str:
         entry_id = entry.get('entryId', '')
         if entry_id.startswith('cursor-bottom'):
             return entry.get('content', {}).get('value', '')
+
+
+def check_initialized(cls_method):
+    def wrapper(cls, *args, **kwargs):
+        if cls.initialized:
+            return cls_method(cls, *args, **kwargs)
+        else:
+            raise RuntimeError('Class has not initialized!')
+    return wrapper

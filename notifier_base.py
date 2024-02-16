@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Union
 
+from utils import check_initialized
+
 
 class Message:
 
@@ -32,10 +34,12 @@ class NotifierBase(ABC):
 
     @classmethod
     @abstractmethod
+    @check_initialized
     def send_message(cls, message: Message):
         pass
 
     @classmethod
+    @check_initialized
     def _work(cls):
         while True:
             message = cls.message_queue.get()
@@ -47,9 +51,11 @@ class NotifierBase(ABC):
                 cls.logger.error(e)
 
     @classmethod
+    @check_initialized
     def work_start(cls):
         threading.Thread(target=cls._work, daemon=True).start()
 
     @classmethod
+    @check_initialized
     def put_message_into_queue(cls, message: Message):
         cls.message_queue.put(message)

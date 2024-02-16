@@ -3,6 +3,8 @@ import time
 
 import requests
 
+from utils import check_initialized
+
 
 class GraphqlAPI():
     initialized = False
@@ -38,11 +40,13 @@ class GraphqlAPI():
         return True
 
     @classmethod
+    @check_initialized
     def get_api_data(cls, api_name):
-        if not cls.initialized:
-            raise RuntimeError('Class has not initialized!')
         if api_name not in cls.graphql_api_data:
             raise ValueError('Unkonw API name: {}'.format(api_name))
 
         api_data = cls.graphql_api_data[api_name]
         return api_data['url'], api_data['method'], cls.headers, api_data['features']
+
+
+GraphqlAPI.init()
