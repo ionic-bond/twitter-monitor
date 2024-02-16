@@ -37,6 +37,7 @@ class GraphqlAPI():
 
         cls.graphql_api_data = json_data['graphql']
         cls.headers = json_data['header']
+        cls.logger.info('Pull GraphQL API data success, API number: {}'.format(len(cls.graphql_api_data)))
         return True
 
     @classmethod
