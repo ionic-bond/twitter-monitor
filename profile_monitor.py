@@ -17,6 +17,7 @@ class ProfileParser():
 
     def __init__(self, json_response: dict):
         self.content = get_content(find_one(json_response, 'user'))
+        self.json_response = json_response
 
     @cached_property
     def name(self) -> str:
@@ -61,6 +62,19 @@ class ProfileParser():
     @cached_property
     def profile_banner_url(self) -> str:
         return self.content.get('profile_banner_url', '')
+
+    @cached_property
+    def pinned_tweet(self) -> str:
+        pinned_tweet = self.content.get('pinned_tweet_ids_str', [])
+        if not pinned_tweet:
+            return None
+        if isinstance(pinned_tweet, list):
+            return pinned_tweet[0]
+        return pinned_tweet
+
+    @cached_property
+    def highlighted_tweet_count(self) -> str:
+        return find_one(self.json_response, 'highlighted_tweets')
 
 
 class ElementBuffer():
@@ -120,6 +134,8 @@ class ProfileMonitor(MonitorBase):
         self.tweet_count = ElementBuffer(parser.tweet_count, change_threshold=1)
         self.profile_image_url = ElementBuffer(parser.profile_image_url)
         self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
+        self.pinned_tweet = ElementBuffer(parser.pinned_tweet)
+        self.highlighted_tweet_count = ElementBuffer(parser.highlighted_tweet_count)
 
         self.original_username = username
         self.sub_monitor_up_to_date = {}
@@ -186,6 +202,14 @@ class ProfileMonitor(MonitorBase):
         if result:
             self.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'], result['new']),
                               photo_url_list=[result['old'], result['new']])
+        
+        result = self.pinned_tweet.push(parser.pinned_tweet)
+        if result:
+            self.send_message(message=MESSAGE_TEMPLATE.format('Pinned tweet', result['old'], result['new']))
+
+        result = self.highlighted_tweet_count.push(parser.highlighted_tweet_count)
+        if result:
+            self.send_message(message=MESSAGE_TEMPLATE.format('Pinned tweet', result['old'], result['new']))
 
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
