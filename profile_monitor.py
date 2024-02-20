@@ -202,7 +202,7 @@ class ProfileMonitor(MonitorBase):
         if result:
             self.send_message(message=MESSAGE_TEMPLATE.format('Profile banner', result['old'], result['new']),
                               photo_url_list=[result['old'], result['new']])
-        
+
         result = self.pinned_tweet.push(parser.pinned_tweet)
         if result:
             self.send_message(message=MESSAGE_TEMPLATE.format('Pinned tweet', result['old'], result['new']))
