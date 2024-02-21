@@ -13,15 +13,13 @@ def _verify_tweet_user_id(tweet: dict, user_id: str) -> bool:
 
 class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
-    rate_limit = 60
 
-    def __init__(self, username: str, token_config: dict, cookies_dir: str, interval: int,
+    def __init__(self, username: str, token_config: dict, cookies_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cookies_dir=cookies_dir,
-                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 

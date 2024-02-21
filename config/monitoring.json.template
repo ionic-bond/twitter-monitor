@@ -1,11 +1,9 @@
 {
     "maintainer_chat_id": 1034977773,
-    "weight_sum_offset": 0,
     "monitoring_user_list": [
         {
             "username": "Twitter",
             "telegram_chat_id_list": [1034977773],
-            "weight": 2,
             "monitoring_following": true,
             "monitoring_like": true,
             "monitoring_tweet": true
@@ -13,7 +11,6 @@
         {
             "username": "TwitterDev",
             "telegram_chat_id_list": [1034977773],
-            "weight": 1,
             "monitoring_following": false,
             "monitoring_like": false,
             "monitoring_tweet": true

@@ -10,7 +10,7 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, token_config: dict, cookies_dir: str, interval: int,
+    def __init__(self, monitor_type: str, username: str, token_config: dict, cookies_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)
@@ -18,7 +18,6 @@ class MonitorBase(ABC):
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         if not self.user_id:
             raise RuntimeError('Initialization error, please check if username {} exists'.format(username))
-        self.interval = interval
         self.telegram_chat_id_list = telegram_chat_id_list
         self.cqhttp_url_list = cqhttp_url_list
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)

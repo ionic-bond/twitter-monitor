@@ -106,15 +106,13 @@ class ElementBuffer():
 
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
-    rate_limit = 10
 
-    def __init__(self, username: str, token_config: dict, cookies_dir: str, interval: int,
+    def __init__(self, username: str, token_config: dict, cookies_dir: str,
                  telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
                          cookies_dir=cookies_dir,
-                         interval=interval,
                          telegram_chat_id_list=telegram_chat_id_list,
                          cqhttp_url_list=cqhttp_url_list)
 
@@ -216,11 +214,6 @@ class ProfileMonitor(MonitorBase):
             sub_monitor_type = sub_monitor.monitor_type
             sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
             if sub_monitor_instance:
-                # # Magic number
-                # time_threshold = datetime.utcnow() - timedelta(seconds=(sub_monitor_instance.interval * 10))
-                # if sub_monitor_instance.last_watch_time < time_threshold:
-                #     self.sub_monitor_up_to_date[sub_monitor_type] = False
-
                 if not self.sub_monitor_up_to_date[sub_monitor_type]:
                     self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(monitor_type=sub_monitor_type,
                                                                                         username=self.original_username)

@@ -2,7 +2,6 @@
 
 import json
 import logging
-import math
 import os
 import sys
 from datetime import datetime, timedelta
@@ -28,10 +27,6 @@ CONFIG_FIELD_TO_MONITOR = {
     'monitoring_like': LikeMonitor,
     'monitoring_tweet': TweetMonitor
 }
-
-
-def _get_interval_second(limit_per_minute: int, token_number: int, widget: int, widget_sum: int):
-    return max(15, math.ceil((60 * widget_sum) / (limit_per_minute * token_number * widget)))
 
 
 def _setup_logger(name: str, log_file_path: str, level=logging.INFO):
@@ -93,13 +88,14 @@ def cli():
 @click.option('--cookies_dir', default=os.path.join(sys.path[0], 'cookies'))
 @click.option('--token_config_path', default=os.path.join(sys.path[0], 'config/token.json'))
 @click.option('--monitoring_config_path', default=os.path.join(sys.path[0], 'config/monitoring.json'))
+@click.option('--interval', default=15, help="Monitor run interval")
 @click.option('--confirm', is_flag=True, default=False, help="Confirm with the maintainer during initialization")
 @click.option('--listen_exit_command',
               is_flag=True,
               default=False,
               help="Liten the \"exit\" command from telegram maintainer chat id")
 @click.option('--send_daily_summary', is_flag=True, default=False, help="Send daily summary to telegram maintainer")
-def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm, listen_exit_command,
+def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interval, confirm, listen_exit_command,
         send_daily_summary):
     os.makedirs(log_dir, exist_ok=True)
     logging.basicConfig(filename=os.path.join(log_dir, 'main'),
@@ -121,15 +117,9 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
     TelegramNotifier.init(token=telegram_bot_token, logger_name='telegram')
     CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
 
-    weight_sum = monitoring_config.get('weight_sum_offset', 0)
-    for monitoring_user in monitoring_config['monitoring_user_list']:
-        weight_sum += monitoring_user['weight']
-
-    token_number = len(twitter_auth_username_list)
     monitors = dict()
     for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
         monitors[monitor_cls.monitor_type] = dict()
-    intervals = dict()
     executors = {'default': ThreadPoolExecutor(len(monitoring_config['monitoring_user_list']))}
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
@@ -137,20 +127,17 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
         telegram_chat_id_list = monitoring_user.get('telegram_chat_id_list', None)
         cqhttp_url_list = monitoring_user.get('cqhttp_url_list', None)
         assert telegram_chat_id_list or cqhttp_url_list
-        weight = monitoring_user['weight']
         for config_field, monitor_cls in CONFIG_FIELD_TO_MONITOR.items():
             if monitoring_user.get(config_field, False) or monitor_cls is ProfileMonitor:
                 monitor_type = monitor_cls.monitor_type
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-                monitor_interval = _get_interval_second(monitor_cls.rate_limit, token_number, weight, weight_sum)
-                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir, monitor_interval,
+                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir,
                                                                telegram_chat_id_list, cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
-                    intervals[username] = monitors[monitor_type][username].interval
                     scheduler.add_job(monitors[monitor_type][username].watch,
                                       trigger='interval',
-                                      seconds=monitors[monitor_type][username].interval)
+                                      seconds=interval)
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
     MonitorManager.init(monitors=monitors)
 
@@ -160,9 +147,6 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, confirm
         # maintainer_chat_id should be telegram chat id.
         maintainer_chat_id = monitoring_config['maintainer_chat_id']
         twitter_watcher = TwitterWatcher(twitter_auth_username_list, cookies_dir)
-        TelegramNotifier.put_message_into_queue(
-            TelegramMessage(chat_id_list=[maintainer_chat_id],
-                            text='Interval: {}'.format(json.dumps(intervals, indent=4))))
         _send_summary(maintainer_chat_id, monitors, twitter_watcher)
         scheduler.add_job(_check_monitors_status,
                           trigger='cron',
