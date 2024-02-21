@@ -135,9 +135,7 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interva
                 monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir,
                                                                telegram_chat_id_list, cqhttp_url_list)
                 if monitor_cls is ProfileMonitor:
-                    scheduler.add_job(monitors[monitor_type][username].watch,
-                                      trigger='interval',
-                                      seconds=interval)
+                    scheduler.add_job(monitors[monitor_type][username].watch, trigger='interval', seconds=interval)
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
     MonitorManager.init(monitors=monitors)
 
