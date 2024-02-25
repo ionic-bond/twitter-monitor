@@ -14,6 +14,14 @@ def _get_like_id_set(like_list: list) -> Set[str]:
     return set(_get_like_id(like) for like in like_list)
 
 
+def _filter_advertisers(like_list: list) -> list:
+    result = []
+    for like in like_list:
+        if not find_one(like, 'card'):
+            result.append(like)
+    return result
+
+
 class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     like_id_set_max_size = 1000
@@ -42,7 +50,7 @@ class LikeMonitor(MonitorBase):
         json_response = self.twitter_watcher.query(api_name, params)
         if json_response is None:
             return None
-        return find_all(json_response, 'tweet_results')
+        return _filter_advertisers(find_all(json_response, 'tweet_results'))
 
     def watch(self) -> bool:
         like_list = self.get_like_list()
