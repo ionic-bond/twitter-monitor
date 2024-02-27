@@ -86,3 +86,7 @@ python3 main.py run
 ## Contact me
 
 Telegram: [@ionic_bond](https://t.me/ionic_bond)
+
+## Donate
+
+[PayPal](https://www.paypal.com/donate/?hosted_button_id=U9WR47CFGPBPU)
