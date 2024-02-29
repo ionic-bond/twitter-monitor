@@ -207,7 +207,7 @@ class ProfileMonitor(MonitorBase):
 
         result = self.highlighted_tweet_count.push(parser.highlighted_tweet_count)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Pinned tweet', result['old'], result['new']))
+            self.send_message(message=MESSAGE_TEMPLATE.format('Highlighted tweet', result['old'], result['new']))
 
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
