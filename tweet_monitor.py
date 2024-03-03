@@ -78,9 +78,9 @@ class TweetMonitor(MonitorBase):
                     quote_text = get_content(quote).get('full_text', '')
                     quote_user = find_one(quote, 'user_results')
                     quote_username = get_content(quote_user).get('screen_name', '')
-                    text += '\nQuote: @{}: {}'.format(quote_username, quote_text)
+                    text += '\n\nQuote: @{}: {}'.format(quote_username, quote_text)
             source = find_one(tweet, 'source')
-            text += '\nSource: {}'.format(convert_html_to_text(source))
+            text += '\n\nSource: {}'.format(convert_html_to_text(source))
             self.send_message(text, photo_url_list, video_url_list)
 
         self.update_last_watch_time()
