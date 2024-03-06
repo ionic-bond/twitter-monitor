@@ -89,4 +89,4 @@ Telegram: [@ionic_bond](https://t.me/ionic_bond)
 
 ## Donate
 
-[PayPal](https://www.paypal.com/donate/?hosted_button_id=U9WR47CFGPBPU)
+[PayPal Donate](https://www.paypal.com/donate/?hosted_button_id=D5DRBK9BL6DUA) or [PayPal](https://paypal.me/ionicbond3)
