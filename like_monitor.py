@@ -17,8 +17,11 @@ def _get_like_id_set(like_list: list) -> Set[str]:
 def _filter_advertisers(like_list: list) -> list:
     result = []
     for like in like_list:
-        if not find_one(like, 'card'):
-            result.append(like)
+        if find_one(like, 'card'):
+            continue
+        if find_one(like, 'userLabelType') == 'BusinessLabel':
+            continue
+        result.append(like)
     return result
 
 
