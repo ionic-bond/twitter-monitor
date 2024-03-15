@@ -76,4 +76,4 @@ class LikeMonitor(MonitorBase):
         return True
 
     def status(self) -> str:
-        return 'Last: {}, num: {}'.format(self.last_watch_time, len(self.existing_like_id_set))
+        return 'Last: {}, num: {}'.format(self.get_last_watch_time(), len(self.existing_like_id_set))

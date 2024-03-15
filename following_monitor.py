@@ -96,4 +96,4 @@ class FollowingMonitor(MonitorBase):
         return True
 
     def status(self) -> str:
-        return 'Last: {}, number: {}'.format(self.last_watch_time, len(self.following_dict))
+        return 'Last: {}, number: {}'.format(self.get_last_watch_time(), len(self.following_dict))

@@ -18,6 +18,7 @@ class CqhttpMessage(Message):
 
 
 class CqhttpNotifier(NotifierBase):
+    notifier_name = 'Cqhttp'
 
     @classmethod
     def init(cls, token: str, logger_name: str):

@@ -16,6 +16,7 @@ from graphql_api import GraphqlAPI
 from like_monitor import LikeMonitor
 from monitor_base import MonitorManager
 from profile_monitor import ProfileMonitor
+from status_tracker import StatusTracker
 from telegram_notifier import TelegramMessage, TelegramNotifier, send_alert
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
@@ -52,19 +53,10 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
 
 
 def _check_monitors_status(telegram_token: str, telegram_chat_id: int, monitors: dict):
-    time_threshold = datetime.utcnow() - timedelta(hours=6)
-    alerts = []
-    for modoule, data in monitors.items():
-        for username, monitor in data.items():
-            if monitor.last_watch_time < time_threshold:
-                alerts.append('{}-{}: {}'.format(modoule, username, monitor.last_watch_time))
+    alerts = StatusTracker.check()
     for username, monitor in monitors[ProfileMonitor.monitor_type].items():
         if monitor.username.element != username:
             alerts.append('{} username changed to {}'.format(username, monitor.username.element))
-    if TelegramNotifier.last_send_time is not None and TelegramNotifier.last_send_time < time_threshold:
-        alerts.append('Telegram: {}'.format(TelegramNotifier.last_send_time))
-    if CqhttpNotifier.last_send_time is not None and CqhttpNotifier.last_send_time < time_threshold:
-        alerts.append('Cqhttp: {}'.format(CqhttpNotifier.last_send_time))
     if alerts:
         send_alert(token=telegram_token, chat_id=telegram_chat_id, message='Alert: \n{}'.format('\n'.join(alerts)))
 
@@ -102,6 +94,7 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interva
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         level=logging.WARNING)
     _setup_logger('api', os.path.join(log_dir, 'twitter-api'))
+    _setup_logger('status', os.path.join(log_dir, 'status-tracker'))
 
     with open(os.path.join(token_config_path), 'r') as token_config_file:
         token_config = json.load(token_config_file)

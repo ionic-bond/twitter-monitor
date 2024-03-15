@@ -87,4 +87,4 @@ class TweetMonitor(MonitorBase):
         return True
 
     def status(self) -> str:
-        return 'Last: {}, id: {}'.format(self.last_watch_time, self.last_tweet_id)
+        return 'Last: {}, id: {}'.format(self.get_last_watch_time(), self.last_tweet_id)

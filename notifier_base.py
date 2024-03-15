@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Union
 
+from status_tracker import StatusTracker
 from utils import check_initialized
 
 
@@ -28,7 +29,6 @@ class NotifierBase(ABC):
     @abstractmethod
     def init(cls):
         cls.message_queue = queue.SimpleQueue()
-        cls.last_send_time = None
         cls.initialized = True
         cls.work_start()
 
@@ -39,13 +39,21 @@ class NotifierBase(ABC):
         pass
 
     @classmethod
+    def update_last_notify_time(cls):
+        StatusTracker.update_notifier_status(cls.notifier_name)
+    
+    @classmethod
+    def get_last_notify_time(cls):
+        return StatusTracker.get_notifier_status(cls.notifier_name)
+
+    @classmethod
     @check_initialized
     def _work(cls):
         while True:
             message = cls.message_queue.get()
             try:
                 cls.send_message(message)
-                cls.last_send_time = datetime.utcnow()
+                cls.update_last_notify_time()
             except Exception as e:
                 print(e)
                 cls.logger.error(e)

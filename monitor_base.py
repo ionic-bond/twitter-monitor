@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Union
 
 from cqhttp_notifier import CqhttpMessage, CqhttpNotifier
+from status_tracker import StatusTracker
 from telegram_notifier import TelegramMessage, TelegramNotifier
 from twitter_watcher import TwitterWatcher
 
@@ -15,21 +16,26 @@ class MonitorBase(ABC):
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.twitter_watcher = TwitterWatcher(token_config.get('twitter_auth_username_list', []), cookies_dir)
+        self.username = username
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         if not self.user_id:
             raise RuntimeError('Initialization error, please check if username {} exists'.format(username))
         self.telegram_chat_id_list = telegram_chat_id_list
         self.cqhttp_url_list = cqhttp_url_list
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)
-        self.last_watch_time = datetime.utcnow()
+        self.update_last_watch_time()
 
     def update_last_watch_time(self):
-        self.last_watch_time = datetime.utcnow()
+        StatusTracker.update_monitor_status(self.monitor_type, self.username)
+    
+    def get_last_watch_time(self):
+        return StatusTracker.get_monitor_status(self.monitor_type, self.username)
 
     def send_message(self,
                      message: str,
                      photo_url_list: Union[List[str], None] = None,
                      video_url_list: Union[List[str], None] = None):
+        StatusTracker.update_last_notify_time()
         message = '{} {}'.format(self.message_prefix, message)
         self.logger.info('Sending message: {}\n'.format(message))
         if photo_url_list:

@@ -24,6 +24,7 @@ class TelegramMessage(Message):
 
 
 class TelegramNotifier(NotifierBase):
+    notifier_name = 'Telegram'
 
     @classmethod
     def init(cls, token: str, logger_name: str):
