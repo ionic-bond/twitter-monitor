@@ -38,8 +38,10 @@ class StatusTracker():
 
     @classmethod
     def check(cls) -> list:
-        cls.logger.info(json.dumps(cls.monitors_status))
-        cls.logger.info(json.dumps(cls.notifiers_status))
+        for monitor_name, monitor_status in cls.monitors_status.items():
+            cls.logger.info('{}: {}'.format(monitor_name, monitor_status))
+        for notifier_name, notifier_status in cls.notifiers_status.items():
+            cls.logger.info('{}: {}'.format(notifier_name, notifier_status))
         cls.logger.info('Last notify time: {}'.format(cls.last_notify_time))
 
         alerts = []
