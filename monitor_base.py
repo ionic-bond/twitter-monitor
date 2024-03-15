@@ -27,7 +27,7 @@ class MonitorBase(ABC):
 
     def update_last_watch_time(self):
         StatusTracker.update_monitor_status(self.monitor_type, self.username)
-    
+
     def get_last_watch_time(self):
         return StatusTracker.get_monitor_status(self.monitor_type, self.username)
 

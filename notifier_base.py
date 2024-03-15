@@ -41,7 +41,7 @@ class NotifierBase(ABC):
     @classmethod
     def update_last_notify_time(cls):
         StatusTracker.update_notifier_status(cls.notifier_name)
-    
+
     @classmethod
     def get_last_notify_time(cls):
         return StatusTracker.get_notifier_status(cls.notifier_name)

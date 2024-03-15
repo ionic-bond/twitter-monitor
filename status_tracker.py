@@ -7,7 +7,7 @@ class StatusTracker():
 
     def __new__(self):
         raise Exception('Do not instantiate this class!')
-    
+
     monitors_status = dict()
     notifiers_status = dict()
     last_notify_time = datetime.utcnow()
@@ -23,7 +23,7 @@ class StatusTracker():
     def get_monitor_status(cls, monitor_type: str, username: str):
         key = '{}-{}'.format(monitor_type, username)
         return cls.monitors_status.get(key, None)
-    
+
     @classmethod
     def update_notifier_status(cls, notifier: str):
         cls.notifiers_status[notifier] = datetime.utcnow()
@@ -35,7 +35,7 @@ class StatusTracker():
     @classmethod
     def update_last_notify_time(cls):
         cls.last_notify_time = datetime.utcnow()
-    
+
     @classmethod
     def check(cls) -> list:
         cls.logger.info(json.dumps(cls.monitors_status))
