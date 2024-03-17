@@ -21,6 +21,12 @@ def _filter_advertisers(like_list: list) -> list:
             continue
         if find_one(like, 'userLabelType') == 'BusinessLabel':
             continue
+        if find_one(like, '__typename') == 'TweetWithVisibilityResultss':
+            continue
+        source = find_one(like, 'source')
+        if source:
+            if 'Advertiser' in source or 'advertiser' in source:
+                continue
         result.append(like)
     return result
 
