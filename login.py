@@ -42,89 +42,131 @@ def init_guest_token(client: Client) -> Client:
 
 
 def flow_start(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json',
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
                         params={'flow_name': 'login'},
                         json={
                             "input_flow_data": {
                                 "flow_context": {
                                     "debug_overrides": {},
-                                    "start_location": {"location": "splash_screen"}
+                                    "start_location": {
+                                        "location": "splash_screen"
+                                    }
                                 }
-                            }, "subtask_versions": {}
+                            },
+                            "subtask_versions": {}
                         })
 
 
 def flow_instrumentation(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-        "flow_token": client.cookies.get('flow_token'),
-        "subtask_inputs": [{
-            "subtask_id": "LoginJsInstrumentationSubtask",
-            "js_instrumentation": {"response": "{}", "link": "next_link"}
-        }],
-    })
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            "subtask_inputs": [{
+                                "subtask_id": "LoginJsInstrumentationSubtask",
+                                "js_instrumentation": {
+                                    "response": "{}",
+                                    "link": "next_link"
+                                }
+                            }],
+                        })
 
 
 def flow_username(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-        "flow_token": client.cookies.get('flow_token'),
-        "subtask_inputs": [{
-            "subtask_id": "LoginEnterUserIdentifierSSO",
-            "settings_list": {
-                "setting_responses": [{
-                    "key": "user_identifier",
-                    "response_data": {"text_data": {"result": client.cookies.get('username')}}
-                }], "link": "next_link"}}],
-    })
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            "subtask_inputs": [{
+                                "subtask_id": "LoginEnterUserIdentifierSSO",
+                                "settings_list": {
+                                    "setting_responses": [{
+                                        "key": "user_identifier",
+                                        "response_data": {
+                                            "text_data": {
+                                                "result": client.cookies.get('username')
+                                            }
+                                        }
+                                    }],
+                                    "link": "next_link"
+                                }
+                            }],
+                        })
 
 
 def flow_password(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-        "flow_token": client.cookies.get('flow_token'),
-        "subtask_inputs": [{
-            "subtask_id": "LoginEnterPassword",
-            "enter_password": {"password": client.cookies.get('password'), "link": "next_link"}}]
-    })
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            "subtask_inputs": [{
+                                "subtask_id": "LoginEnterPassword",
+                                "enter_password": {
+                                    "password": client.cookies.get('password'),
+                                    "link": "next_link"
+                                }
+                            }]
+                        })
 
 
 def flow_duplication_check(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-        "flow_token": client.cookies.get('flow_token'),
-        "subtask_inputs": [{
-            "subtask_id": "AccountDuplicationCheck",
-            "check_logged_in_account": {"link": "AccountDuplicationCheck_false"},
-        }],
-    })
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            "subtask_inputs": [{
+                                "subtask_id": "AccountDuplicationCheck",
+                                "check_logged_in_account": {
+                                    "link": "AccountDuplicationCheck_false"
+                                },
+                            }],
+                        })
 
 
 def confirm_email(client: Client) -> Client:
-    return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-        "flow_token": client.cookies.get('flow_token'),
-        "subtask_inputs": [
-            {
-                "subtask_id": "LoginAcid",
-                "enter_text": {
-                    "text": client.cookies.get('email'),
-                    "link": "next_link"
-                }
-            }]
-    })
+    return update_token(client,
+                        'flow_token',
+                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            "subtask_inputs": [{
+                                "subtask_id": "LoginAcid",
+                                "enter_text": {
+                                    "text": client.cookies.get('email'),
+                                    "link": "next_link"
+                                }
+                            }]
+                        })
 
 
 def solve_confirmation_challenge(client: Client, **kwargs) -> Client:
     if fn := kwargs.get('proton'):
         confirmation_code = fn()
-        return update_token(client, 'flow_token', 'https://api.twitter.com/1.1/onboarding/task.json', json={
-            "flow_token": client.cookies.get('flow_token'),
-            'subtask_inputs': [
-                {
-                    'subtask_id': 'LoginAcid',
-                    'enter_text': {
-                        'text': confirmation_code,
-                        'link': 'next_link',
-                    },
-                },
-            ],
-        })
+        return update_token(client,
+                            'flow_token',
+                            'https://api.twitter.com/1.1/onboarding/task.json',
+                            json={
+                                "flow_token":
+                                    client.cookies.get('flow_token'),
+                                'subtask_inputs': [{
+                                    'subtask_id': 'LoginAcid',
+                                    'enter_text': {
+                                        'text': confirmation_code,
+                                        'link': 'next_link',
+                                    },
+                                },],
+                            })
 
 
 def execute_login_flow(client: Client, **kwargs) -> Client | None:
@@ -148,20 +190,18 @@ def execute_login_flow(client: Client, **kwargs) -> Client | None:
 
 
 def login(username: str, password: str, **kwargs) -> Client:
-    client = Client(
-        cookies={
-            "username": username,
-            "password": password,
-            "guest_token": None,
-            "flow_token": None,
-        },
-        headers= GraphqlAPI.headers | {
-            'content-type': 'application/json',
-            'x-twitter-active-user': 'yes',
-            'x-twitter-client-language': 'en',
-        },
-        follow_redirects=True
-    )
+    client = Client(cookies={
+        "username": username,
+        "password": password,
+        "guest_token": None,
+        "flow_token": None,
+    },
+                    headers=GraphqlAPI.headers | {
+                        'content-type': 'application/json',
+                        'x-twitter-active-user': 'yes',
+                        'x-twitter-client-language': 'en',
+                    },
+                    follow_redirects=True)
     client = execute_login_flow(client, **kwargs)
     if not client or client.cookies.get('flow_errors') == 'true':
         raise Exception(f'[error] {username} login failed')
