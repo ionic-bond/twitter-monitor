@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timedelta
 
 import click
 from apscheduler.executors.pool import ThreadPoolExecutor
@@ -14,13 +13,13 @@ from cqhttp_notifier import CqhttpNotifier
 from following_monitor import FollowingMonitor
 from graphql_api import GraphqlAPI
 from like_monitor import LikeMonitor
+from login import login
 from monitor_base import MonitorManager
 from profile_monitor import ProfileMonitor
 from status_tracker import StatusTracker
 from telegram_notifier import TelegramMessage, TelegramNotifier, send_alert
 from tweet_monitor import TweetMonitor
 from twitter_watcher import TwitterWatcher
-from utils import get_auth_handler, dump_auth_handler
 
 CONFIG_FIELD_TO_MONITOR = {
     'monitoring_profile': ProfileMonitor,
@@ -193,9 +192,11 @@ def check_tokens(cookies_dir, token_config_path, telegram_chat_id, test_username
 @click.option('--password', required=True)
 def generate_auth_cookie(cookies_dir, username, password):
     os.makedirs(cookies_dir, exist_ok=True)
-    auth_handler = get_auth_handler(username, password)
+    client = login(username=username, password=password)
+    cookies = client.cookies
     dump_path = os.path.join(cookies_dir, '{}.json'.format(username))
-    dump_auth_handler(auth_handler, dump_path)
+    with open(dump_path, 'w') as f:
+        f.write(json.dumps(dict(cookies), indent=2))
     print('Saved to {}'.format(dump_path))
 
 

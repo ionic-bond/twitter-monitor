@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from typing import Tuple
 
 from bs4 import BeautifulSoup
-from tweepy_authlib import CookieSessionUserHandler
 
 
 def convert_html_to_text(html: str) -> str:
@@ -58,17 +57,6 @@ def parse_create_time_from_tweet(tweet: dict) -> datetime.time:
     if not created_at:
         return datetime.fromtimestamp(0).replace(tzinfo=timezone.utc)
     return datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
-
-
-def get_auth_handler(username: str, password: str):
-    auth_handler = CookieSessionUserHandler(screen_name=username, password=password)
-    return auth_handler
-
-
-def dump_auth_handler(auth_handler: CookieSessionUserHandler, path: str):
-    cookies = auth_handler.get_cookies()
-    with open(path, 'w') as f:
-        json.dump(cookies.get_dict(), f, ensure_ascii=False, indent=4)
 
 
 def find_all(obj: any, key: str) -> list:
