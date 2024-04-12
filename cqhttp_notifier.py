@@ -6,6 +6,13 @@ from typing import List, Union
 from notifier_base import Message, NotifierBase
 
 
+def _remove_http(text: str) -> str:
+    # QQ will intercept http links
+    text = text.replace(r'https://', '')
+    text = text.replace(r'http://', '')
+    return text
+
+
 class CqhttpMessage(Message):
 
     def __init__(self,
@@ -36,7 +43,7 @@ class CqhttpNotifier(NotifierBase):
 
     @classmethod
     def _send_text_to_single_chat(cls, url: str, text: str):
-        data = {'message': text}
+        data = {'message': _remove_http(text)}
         cls._post_request_to_cqhttp(url, data)
 
     @classmethod
