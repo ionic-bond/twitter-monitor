@@ -31,7 +31,7 @@ class FollowingMonitor(MonitorBase):
         while True:
             json_response = self.twitter_watcher.query(api_name, params)
             following_list = find_all(json_response, 'user_results')
-            while not following_list:
+            while not following_list and not find_one(json_response, 'result'):
                 import json
                 self.logger.error(json.dumps(json_response, indent=2))
                 time.sleep(10)

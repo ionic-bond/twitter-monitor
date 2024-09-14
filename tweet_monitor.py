@@ -24,7 +24,7 @@ class TweetMonitor(MonitorBase):
                          cqhttp_url_list=cqhttp_url_list)
 
         tweet_list = self.get_tweet_list()
-        while not tweet_list:
+        while tweet_list is None:
             time.sleep(60)
             tweet_list = self.get_tweet_list()
 
