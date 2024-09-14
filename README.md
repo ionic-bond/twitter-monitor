@@ -1,6 +1,6 @@
 # Twitter Monitor
 
-Monitor the `following`, `tweet`, `like` and `profile` of a Twitter user and send the changes to the telegram channel.
+Monitor the `following`, `tweet`, ~~`like`~~ and `profile` of a Twitter user and send the changes to the telegram channel.
 
 Data is crawled from Twitter web’s GraphQL API.
 
@@ -21,7 +21,7 @@ Clone code and install dependent pip packages
 ```bash
 git clone https://github.com/ionic-bond/twitter-monitor.git
 cd twitter-monitor
-pip3 install ./requirements.txt
+pip3 install -r ./requirements.txt
 ```
 
 ### Prepare required tokens
@@ -30,7 +30,7 @@ pip3 install ./requirements.txt
 
   https://t.me/BotFather
 
-- Unofficial Twitter account auth by [tweepy-authlib](https://github.com/tsukumijima/tweepy-authlib)
+- Unofficial Twitter account auth:
 
     You need to prepare one or more normal twitter accounts, and then use the following command to generate auth cookies
 
