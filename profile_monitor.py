@@ -107,14 +107,12 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
 
-    def __init__(self, username: str, token_config: dict, cookies_dir: str, telegram_chat_id_list: List[int],
-                 cqhttp_url_list: List[str]):
+    def __init__(self, username: str, token_config: dict, user_config: dict, cookies_dir: str):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
-                         cookies_dir=cookies_dir,
-                         telegram_chat_id_list=telegram_chat_id_list,
-                         cqhttp_url_list=cqhttp_url_list)
+                         user_config=user_config,
+                         cookies_dir=cookies_dir)
 
         json_response = self.get_user()
         while not json_response:
@@ -134,6 +132,10 @@ class ProfileMonitor(MonitorBase):
         self.profile_banner_url = ElementBuffer(parser.profile_banner_url)
         self.pinned_tweet = ElementBuffer(parser.pinned_tweet)
         self.highlighted_tweet_count = ElementBuffer(parser.highlighted_tweet_count)
+
+        self.monitoring_following_count = user_config.get('monitoring_following_count', False)
+        self.monitoring_tweet_count = user_config.get('monitoring_tweet_count', False)
+        self.monitoring_like_count = user_config.get('monitoring_like_count', False)
 
         self.original_username = username
         self.sub_monitor_up_to_date = {}
@@ -176,18 +178,27 @@ class ProfileMonitor(MonitorBase):
 
         result = self.following_count.push(parser.following_count)
         if result:
-            self.send_message(message=MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            if self.monitoring_following_count:
+                self.send_message(message=MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
+            else:
+                self.logger.info(MESSAGE_TEMPLATE.format('Following count', result['old'], result['new']))
             self.sub_monitor_up_to_date[FollowingMonitor.monitor_type] = False
 
         result = self.like_count.push(parser.like_count)
         if result:
-            self.logger.info(MESSAGE_TEMPLATE.format('Like count', result['old'], result['new']))
+            if self.monitoring_like_count:
+                self.send_message(message=MESSAGE_TEMPLATE.format('Like count', result['old'], result['new']))
+            else:
+                self.logger.info(MESSAGE_TEMPLATE.format('Like count', result['old'], result['new']))
             if result['new'] > result['old']:
                 self.sub_monitor_up_to_date[LikeMonitor.monitor_type] = False
 
         result = self.tweet_count.push(parser.tweet_count)
         if result:
-            self.logger.info(MESSAGE_TEMPLATE.format('Tweet count', result['old'], result['new']))
+            if self.monitoring_tweet_count:
+                self.send_message(message=MESSAGE_TEMPLATE.format('Tweet count', result['old'], result['new']))
+            else:
+                self.logger.info(MESSAGE_TEMPLATE.format('Tweet count', result['old'], result['new']))
             if result['new'] > result['old']:
                 self.sub_monitor_up_to_date[TweetMonitor.monitor_type] = False
 

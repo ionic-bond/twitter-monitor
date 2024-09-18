@@ -35,14 +35,12 @@ class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     like_id_set_max_size = 1000
 
-    def __init__(self, username: str, token_config: dict, cookies_dir: str, telegram_chat_id_list: List[int],
-                 cqhttp_url_list: List[str]):
+    def __init__(self, username: str, token_config: dict, user_config: dict, cookies_dir: str):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          token_config=token_config,
-                         cookies_dir=cookies_dir,
-                         telegram_chat_id_list=telegram_chat_id_list,
-                         cqhttp_url_list=cqhttp_url_list)
+                         user_config=user_config,
+                         cookies_dir=cookies_dir)
 
         like_list = self.get_like_list()
         while like_list is None:

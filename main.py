@@ -116,16 +116,12 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interva
     scheduler = BlockingScheduler(executors=executors)
     for monitoring_user in monitoring_config['monitoring_user_list']:
         username = monitoring_user['username']
-        telegram_chat_id_list = monitoring_user.get('telegram_chat_id_list', None)
-        cqhttp_url_list = monitoring_user.get('cqhttp_url_list', None)
-        assert telegram_chat_id_list or cqhttp_url_list
         for config_field, monitor_cls in CONFIG_FIELD_TO_MONITOR.items():
             if monitoring_user.get(config_field, False) or monitor_cls is ProfileMonitor:
                 monitor_type = monitor_cls.monitor_type
                 logger_name = '{}-{}'.format(username, monitor_type)
                 _setup_logger(logger_name, os.path.join(log_dir, logger_name))
-                monitors[monitor_type][username] = monitor_cls(username, token_config, cookies_dir,
-                                                               telegram_chat_id_list, cqhttp_url_list)
+                monitors[monitor_type][username] = monitor_cls(username, token_config, monitoring_user, cookies_dir)
                 if monitor_cls is ProfileMonitor:
                     scheduler.add_job(monitors[monitor_type][username].watch, trigger='interval', seconds=interval)
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))

@@ -11,8 +11,7 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, token_config: dict, cookies_dir: str,
-                 telegram_chat_id_list: List[int], cqhttp_url_list: List[str]):
+    def __init__(self, monitor_type: str, username: str, token_config: dict, user_config: dict, cookies_dir: str):
         logger_name = '{}-{}'.format(username, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.twitter_watcher = TwitterWatcher(token_config.get('twitter_auth_username_list', []), cookies_dir)
@@ -20,8 +19,8 @@ class MonitorBase(ABC):
         self.user_id = self.twitter_watcher.get_id_by_username(username)
         if not self.user_id:
             raise RuntimeError('Initialization error, please check if username {} exists'.format(username))
-        self.telegram_chat_id_list = telegram_chat_id_list
-        self.cqhttp_url_list = cqhttp_url_list
+        self.telegram_chat_id_list = user_config.get('telegram_chat_id_list', None)
+        self.cqhttp_url_list = user_config.get('cqhttp_url_list', None)
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)
         self.update_last_watch_time()
 
