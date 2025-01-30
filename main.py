@@ -127,7 +127,7 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interva
     _setup_logger('monitor-caller', os.path.join(log_dir, 'monitor-caller'))
     MonitorManager.init(monitors=monitors)
 
-    scheduler.add_job(GraphqlAPI.update_api_data, trigger='cron', hour='0')
+    scheduler.add_job(GraphqlAPI.update_api_data, trigger='cron', hour='*')
 
     if monitoring_config['maintainer_chat_id']:
         # maintainer_chat_id should be telegram chat id.

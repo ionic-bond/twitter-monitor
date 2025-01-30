@@ -21,7 +21,7 @@ class GraphqlAPI():
 
     @classmethod
     def update_api_data(cls):
-        response = requests.get('https://github.com/fa0311/TwitterInternalAPIDocument/raw/master/docs/json/API.json',
+        response = requests.get('https://github.com/ionic-bond/TwitterInternalAPIDocument/raw/master/docs/json/API.json',
                                 timeout=300)
         if response.status_code != 200:
             cls.logger.error('Request returned an error: {} {}.'.format(response.status_code, response.text))
