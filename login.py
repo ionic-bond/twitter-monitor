@@ -17,6 +17,8 @@ def update_token(client: Client, key: str, url: str, **kwargs) -> Client:
         }
         client.headers.update(headers)
         r = client.post(url, **kwargs)
+        if r.status_code != 200:
+            print(f'[error] {r.status_code} {r.text}')
         info = r.json()
 
         for task in info.get('subtasks', []):
@@ -38,13 +40,13 @@ def update_token(client: Client, key: str, url: str, **kwargs) -> Client:
 
 
 def init_guest_token(client: Client) -> Client:
-    return update_token(client, 'guest_token', 'https://api.twitter.com/1.1/guest/activate.json')
+    return update_token(client, 'guest_token', 'https://api.x.com/1.1/guest/activate.json')
 
 
 def flow_start(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         params={'flow_name': 'login'},
                         json={
                             "input_flow_data": {
@@ -62,7 +64,7 @@ def flow_start(client: Client) -> Client:
 def flow_instrumentation(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         json={
                             "flow_token":
                                 client.cookies.get('flow_token'),
@@ -79,7 +81,7 @@ def flow_instrumentation(client: Client) -> Client:
 def flow_username(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         json={
                             "flow_token":
                                 client.cookies.get('flow_token'),
@@ -103,7 +105,7 @@ def flow_username(client: Client) -> Client:
 def flow_password(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         json={
                             "flow_token":
                                 client.cookies.get('flow_token'),
@@ -117,26 +119,21 @@ def flow_password(client: Client) -> Client:
                         })
 
 
-def flow_duplication_check(client: Client) -> Client:
+def flow_finish(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         json={
                             "flow_token":
                                 client.cookies.get('flow_token'),
-                            "subtask_inputs": [{
-                                "subtask_id": "AccountDuplicationCheck",
-                                "check_logged_in_account": {
-                                    "link": "AccountDuplicationCheck_false"
-                                },
-                            }],
+                            "subtask_inputs": [],
                         })
 
 
 def confirm_email(client: Client) -> Client:
     return update_token(client,
                         'flow_token',
-                        'https://api.twitter.com/1.1/onboarding/task.json',
+                        'https://api.x.com/1.1/onboarding/task.json',
                         json={
                             "flow_token":
                                 client.cookies.get('flow_token'),
@@ -155,7 +152,7 @@ def solve_confirmation_challenge(client: Client, **kwargs) -> Client:
         confirmation_code = fn()
         return update_token(client,
                             'flow_token',
-                            'https://api.twitter.com/1.1/onboarding/task.json',
+                            'https://api.x.com/1.1/onboarding/task.json',
                             json={
                                 "flow_token":
                                     client.cookies.get('flow_token'),
@@ -171,7 +168,7 @@ def solve_confirmation_challenge(client: Client, **kwargs) -> Client:
 
 def execute_login_flow(client: Client, **kwargs) -> Client | None:
     client = init_guest_token(client)
-    for fn in [flow_start, flow_instrumentation, flow_username, flow_password, flow_duplication_check]:
+    for fn in [flow_start, flow_instrumentation, flow_username, flow_password, flow_finish]:
         client = fn(client)
 
     # solve email challenge
@@ -200,6 +197,7 @@ def login(username: str, password: str, **kwargs) -> Client:
                         'content-type': 'application/json',
                         'x-twitter-active-user': 'yes',
                         'x-twitter-client-language': 'en',
+                        'User-Agent': 'Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion',
                     },
                     follow_redirects=True)
     client = execute_login_flow(client, **kwargs)
