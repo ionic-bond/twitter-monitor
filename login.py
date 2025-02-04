@@ -124,8 +124,7 @@ def flow_finish(client: Client) -> Client:
                         'flow_token',
                         'https://api.x.com/1.1/onboarding/task.json',
                         json={
-                            "flow_token":
-                                client.cookies.get('flow_token'),
+                            "flow_token": client.cookies.get('flow_token'),
                             "subtask_inputs": [],
                         })
 
