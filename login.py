@@ -178,13 +178,13 @@ def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client | 
             print(f'[warning] Please check your email for a confirmation code and fill it to --confirmation_code')
             return
         client = solve_confirmation_challenge(client, confirmation_code, **kwargs)
-    
+
     client = flow_finish(client)
 
     return client
 
 
-def login(username: str, password: str, confirmation_code: str=None, **kwargs) -> Client:
+def login(username: str, password: str, confirmation_code: str = None, **kwargs) -> Client:
     client = Client(cookies={
         "username": username,
         "password": password,
