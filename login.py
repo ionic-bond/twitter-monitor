@@ -146,28 +146,26 @@ def confirm_email(client: Client) -> Client:
                         })
 
 
-def solve_confirmation_challenge(client: Client, **kwargs) -> Client:
-    if fn := kwargs.get('proton'):
-        confirmation_code = fn()
-        return update_token(client,
-                            'flow_token',
-                            'https://api.x.com/1.1/onboarding/task.json',
-                            json={
-                                "flow_token":
-                                    client.cookies.get('flow_token'),
-                                'subtask_inputs': [{
-                                    'subtask_id': 'LoginAcid',
-                                    'enter_text': {
-                                        'text': confirmation_code,
-                                        'link': 'next_link',
-                                    },
-                                },],
-                            })
+def solve_confirmation_challenge(client: Client, confirmation_code, **kwargs) -> Client:
+    return update_token(client,
+                        'flow_token',
+                        'https://api.x.com/1.1/onboarding/task.json',
+                        json={
+                            "flow_token":
+                                client.cookies.get('flow_token'),
+                            'subtask_inputs': [{
+                                'subtask_id': 'LoginAcid',
+                                'enter_text': {
+                                    'text': confirmation_code,
+                                    'link': 'next_link',
+                                },
+                            },],
+                        })
 
 
-def execute_login_flow(client: Client, **kwargs) -> Client | None:
+def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client | None:
     client = init_guest_token(client)
-    for fn in [flow_start, flow_instrumentation, flow_username, flow_password, flow_finish]:
+    for fn in [flow_start, flow_instrumentation, flow_username, flow_password]:
         client = fn(client)
 
     # solve email challenge
@@ -176,16 +174,17 @@ def execute_login_flow(client: Client, **kwargs) -> Client | None:
 
     # solve confirmation challenge (Proton Mail only)
     if client.cookies.get('confirmation_code') == 'true':
-        if not kwargs.get('proton'):
-            print(f'[warning] Please check your email for a confirmation code'
-                  f' and log in again using the web app. If you wish to automatically solve'
-                  f' email confirmation challenges, add a Proton Mail account in your account settings')
+        if not confirmation_code:
+            print(f'[warning] Please check your email for a confirmation code and fill it to --confirmation_code')
             return
-        client = solve_confirmation_challenge(client, **kwargs)
+        client = solve_confirmation_challenge(client, confirmation_code, **kwargs)
+    
+    client = flow_finish(client)
+
     return client
 
 
-def login(username: str, password: str, **kwargs) -> Client:
+def login(username: str, password: str, confirmation_code: str=None, **kwargs) -> Client:
     client = Client(cookies={
         "username": username,
         "password": password,
@@ -199,7 +198,7 @@ def login(username: str, password: str, **kwargs) -> Client:
                         'User-Agent': 'Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion',
                     },
                     follow_redirects=True)
-    client = execute_login_flow(client, **kwargs)
+    client = execute_login_flow(client, confirmation_code, **kwargs)
     if not client or client.cookies.get('flow_errors') == 'true':
         raise Exception(f'[error] {username} login failed')
     return client

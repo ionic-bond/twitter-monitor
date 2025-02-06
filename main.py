@@ -186,9 +186,10 @@ def check_tokens(cookies_dir, token_config_path, telegram_chat_id, test_username
 @click.option('--cookies_dir', default=os.path.join(sys.path[0], 'cookies'))
 @click.option('--username', required=True)
 @click.option('--password', required=True)
-def generate_auth_cookie(cookies_dir, username, password):
+@click.option('--confirmation_code', required=False, default=None)
+def generate_auth_cookie(cookies_dir, username, password, confirmation_code):
     os.makedirs(cookies_dir, exist_ok=True)
-    client = login(username=username, password=password)
+    client = login(username=username, password=password, confirmation_code=confirmation_code)
     cookies = client.cookies
     dump_path = os.path.join(cookies_dir, '{}.json'.format(username))
     with open(dump_path, 'w') as f:
