@@ -163,7 +163,7 @@ def solve_confirmation_challenge(client: Client, confirmation_code, **kwargs) ->
                         })
 
 
-def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client | None:
+def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client:
     client = init_guest_token(client)
     for fn in [flow_start, flow_instrumentation, flow_username, flow_password]:
         client = fn(client)
@@ -176,7 +176,7 @@ def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client | 
     if client.cookies.get('confirmation_code') == 'true':
         if not confirmation_code:
             print(f'[warning] Please check your email for a confirmation code and fill it to --confirmation_code')
-            return
+            return client
         client = solve_confirmation_challenge(client, confirmation_code, **kwargs)
 
     client = flow_finish(client)
