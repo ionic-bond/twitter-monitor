@@ -12,7 +12,8 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict, user_config: dict,
+                 cookies_dir: str):
         logger_name = '{}-{}'.format(title, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.twitter_watcher = TwitterWatcher(token_config.get('twitter_auth_username_list', []), cookies_dir)
@@ -64,8 +65,7 @@ class MonitorBase(ABC):
                 DiscordMessage(webhook_url_list=self.discord_webhook_url_list,
                                text=message,
                                photo_url_list=photo_url_list,
-                               video_url_list=video_url_list)
-            )
+                               video_url_list=video_url_list))
 
     @abstractmethod
     def watch(self) -> bool:
