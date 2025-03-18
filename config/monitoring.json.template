@@ -4,6 +4,7 @@
         {
             "username": "Twitter",
             "telegram_chat_id_list": [1034977773],
+            "discord_webhook_url_list": [],
             "monitoring_following": true,
             "monitoring_tweet": true,
             "monitoring_following_count": false,

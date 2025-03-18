@@ -10,6 +10,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BlockingScheduler
 
 from cqhttp_notifier import CqhttpNotifier
+from discord_notifier import DiscordNotifier
 from following_monitor import FollowingMonitor
 from graphql_api import GraphqlAPI
 from like_monitor import LikeMonitor
@@ -106,8 +107,10 @@ def run(log_dir, cookies_dir, token_config_path, monitoring_config_path, interva
 
     _setup_logger('telegram', os.path.join(log_dir, 'telegram'))
     _setup_logger('cqhttp', os.path.join(log_dir, 'cqhttp'))
+    _setup_logger('discord', os.path.join(log_dir, 'discord'))
     TelegramNotifier.init(token=telegram_bot_token, logger_name='telegram')
     CqhttpNotifier.init(token=token_config.get('cqhttp_access_token', ''), logger_name='cqhttp')
+    DiscordNotifier.init(logger_name='discord')
 
     monitors = dict()
     for monitor_cls in CONFIG_FIELD_TO_MONITOR.values():
