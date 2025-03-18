@@ -8,9 +8,10 @@ from utils import find_all, find_one, get_cursor, get_content
 class FollowingMonitor(MonitorBase):
     monitor_type = 'Following'
 
-    def __init__(self, username: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
+                         title=title,
                          token_config=token_config,
                          user_config=user_config,
                          cookies_dir=cookies_dir)

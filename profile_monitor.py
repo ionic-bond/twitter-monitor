@@ -107,9 +107,10 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
 
-    def __init__(self, username: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
+                         title=title,
                          token_config=token_config,
                          user_config=user_config,
                          cookies_dir=cookies_dir)
@@ -137,7 +138,7 @@ class ProfileMonitor(MonitorBase):
         self.monitoring_tweet_count = user_config.get('monitoring_tweet_count', False)
         self.monitoring_like_count = user_config.get('monitoring_like_count', False)
 
-        self.original_username = username
+        self.title = title
         self.sub_monitor_up_to_date = {}
         for sub_monitor in SUB_MONITOR_LIST:
             self.sub_monitor_up_to_date[sub_monitor.monitor_type] = True
@@ -223,11 +224,11 @@ class ProfileMonitor(MonitorBase):
     def watch_sub_monitor(self):
         for sub_monitor in SUB_MONITOR_LIST:
             sub_monitor_type = sub_monitor.monitor_type
-            sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.original_username)
+            sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.title)
             if sub_monitor_instance:
                 if not self.sub_monitor_up_to_date[sub_monitor_type]:
                     self.sub_monitor_up_to_date[sub_monitor_type] = MonitorManager.call(monitor_type=sub_monitor_type,
-                                                                                        username=self.original_username)
+                                                                                        username=self.title)
                 else:
                     sub_monitor_instance.update_last_watch_time()
 

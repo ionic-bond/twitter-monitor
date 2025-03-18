@@ -12,8 +12,8 @@ from twitter_watcher import TwitterWatcher
 
 class MonitorBase(ABC):
 
-    def __init__(self, monitor_type: str, username: str, token_config: dict, user_config: dict, cookies_dir: str):
-        logger_name = '{}-{}'.format(username, monitor_type)
+    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+        logger_name = '{}-{}'.format(title, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.twitter_watcher = TwitterWatcher(token_config.get('twitter_auth_username_list', []), cookies_dir)
         self.username = username
