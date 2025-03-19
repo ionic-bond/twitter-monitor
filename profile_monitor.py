@@ -139,6 +139,7 @@ class ProfileMonitor(MonitorBase):
         self.monitoring_like_count = user_config.get('monitoring_like_count', False)
 
         self.title = title
+        self.original_username = username
         self.sub_monitor_up_to_date = {}
         for sub_monitor in SUB_MONITOR_LIST:
             self.sub_monitor_up_to_date[sub_monitor.monitor_type] = True

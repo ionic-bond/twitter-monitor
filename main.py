@@ -54,9 +54,9 @@ def _send_summary(telegram_chat_id: str, monitors: dict, watcher: TwitterWatcher
 
 def _check_monitors_status(telegram_token: str, telegram_chat_id: int, monitors: dict):
     alerts = StatusTracker.check()
-    for username, monitor in monitors[ProfileMonitor.monitor_type].items():
-        if monitor.username.element != username:
-            alerts.append('{} username changed to {}'.format(username, monitor.username.element))
+    for title, monitor in monitors[ProfileMonitor.monitor_type].items():
+        if monitor.username.element != monitor.original_username:
+            alerts.append('{} username changed to {}'.format(title, monitor.username.element))
     if alerts:
         send_alert(token=telegram_token, chat_id=telegram_chat_id, message='Alert: \n{}'.format('\n'.join(alerts)))
 
