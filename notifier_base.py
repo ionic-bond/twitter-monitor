@@ -1,7 +1,6 @@
 import queue
 import threading
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import List, Union
 
 from status_tracker import StatusTracker
@@ -29,6 +28,7 @@ class NotifierBase(ABC):
     @abstractmethod
     def init(cls):
         cls.message_queue = queue.SimpleQueue()
+        StatusTracker.set_notifier_status(cls.notifier_name, True)
         cls.initialized = True
         cls.work_start()
 
@@ -39,21 +39,14 @@ class NotifierBase(ABC):
         pass
 
     @classmethod
-    def update_last_notify_time(cls):
-        StatusTracker.update_notifier_status(cls.notifier_name)
-
-    @classmethod
-    def get_last_notify_time(cls):
-        return StatusTracker.get_notifier_status(cls.notifier_name)
-
-    @classmethod
     @check_initialized
     def _work(cls):
         while True:
             message = cls.message_queue.get()
             try:
+                StatusTracker.set_notifier_status(cls.notifier_name, False)
                 cls.send_message(message)
-                cls.update_last_notify_time()
+                StatusTracker.set_notifier_status(cls.notifier_name, True)
             except Exception as e:
                 print(e)
                 cls.logger.error(e)

@@ -89,7 +89,7 @@ class TelegramNotifier(NotifierBase):
         assert isinstance(message, TelegramMessage)
         message.text = '{}\nPlease reply Y/N'.format(message.text)
         cls.put_message_into_queue(message)
-        sending_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+        sending_time = datetime.now(timezone.utc)
         while True:
             for update in cls._get_new_updates():
                 received_message = update.message
@@ -108,7 +108,7 @@ class TelegramNotifier(NotifierBase):
     def listen_exit_command(cls, chat_id: str):
 
         def _listen_exit_command():
-            starting_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+            starting_time = datetime.now(timezone.utc)
             while True:
                 for update in cls._get_new_updates():
                     received_message = update.message

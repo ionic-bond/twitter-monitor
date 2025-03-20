@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List
 
 from monitor_base import MonitorBase
 from utils import parse_media_from_tweet, parse_text_from_tweet, parse_create_time_from_tweet, find_all, find_one, get_content, convert_html_to_text
@@ -50,7 +49,7 @@ class TweetMonitor(MonitorBase):
 
         max_tweet_id = -1
         new_tweet_list = []
-        time_threshold = datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(minutes=5)
+        time_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
         for tweet in tweet_list:
             if not _verify_tweet_user_id(tweet, self.user_id):
                 continue

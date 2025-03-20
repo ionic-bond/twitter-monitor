@@ -37,7 +37,6 @@ class MonitorBase(ABC):
                      message: str,
                      photo_url_list: Union[List[str], None] = None,
                      video_url_list: Union[List[str], None] = None):
-        StatusTracker.update_last_notify_time()
         message = '{} {}'.format(self.message_prefix, message)
         self.logger.info('Sending message: {}\n'.format(message))
         if photo_url_list:
