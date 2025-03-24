@@ -79,6 +79,9 @@ class TweetMonitor(MonitorBase):
                     text += '\n\nQuote: @{}: {}'.format(quote_username, quote_text)
             source = find_one(tweet, 'source')
             text += '\n\nSource: {}'.format(convert_html_to_text(source))
+            tweet_id = find_one(tweet, 'rest_id')
+            tweet_link = "https://x.com/{}/status/{}".format(self.user_id, tweet_id)
+            text += f"\nLink: {tweet_link}"
             self.send_message(text, photo_url_list, video_url_list)
 
         self.update_last_watch_time()
