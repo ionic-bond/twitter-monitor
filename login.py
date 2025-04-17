@@ -14,6 +14,7 @@ def update_token(client: Client, key: str, url: str, **kwargs) -> Client:
             'x-guest-token': client.cookies.get('guest_token', ''),
             'x-csrf-token': client.cookies.get('ct0', ''),
             'x-twitter-auth-type': 'OAuth2Client' if client.cookies.get('auth_token') else '',
+            'x-client-transaction-id': GraphqlAPI.get_clint_transaction_id(method='POST', url=url)
         }
         client.headers.update(headers)
         r = client.post(url, **kwargs)
@@ -176,7 +177,7 @@ def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client:
     if client.cookies.get('confirmation_code') == 'true':
         if not confirmation_code:
             print(f'[warning] Please check your email for a confirmation code and fill it to --confirmation_code')
-            return client
+            return None
         client = solve_confirmation_challenge(client, confirmation_code, **kwargs)
 
     client = flow_finish(client)

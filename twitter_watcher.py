@@ -12,6 +12,7 @@ from utils import find_one
 
 
 def _get_auth_headers(headers, cookies) -> dict:
+
     authed_headers = headers | {
         'cookie': '; '.join(f'{k}={v}' for k, v in cookies.items()),
         'referer': 'https://twitter.com/',
@@ -51,20 +52,24 @@ class TwitterWatcher:
                 auth_headers = _get_auth_headers(headers, self.auth_cookie_list[self.current_token_index])
                 response = requests.request(method=method, url=url, headers=auth_headers, params=params, timeout=300)
             except requests.exceptions.ConnectionError as e:
-                self.logger.error('Request error: {}, try next token.'.format(e))
+                self.logger.error('{} request error: {}, try next token.'.format(url, e))
                 continue
             if response.status_code in [200, 404, 403]:
                 # 404 NOT_FOUND
                 # 403 CURRENT_USER_SUSPENDED
+                if not response.text:
+                    self.logger.error('{} response empty {}, try next token.'.format(url, response.status_code))
+                    continue
                 json_response = response.json()
                 if 'errors' in json_response:
-                    self.logger.error('Request error: {}, try next token.'.format(json_response['errors']))
+                    self.logger.error('{} request error: {} {}, try next token.'.format(url, response.status_code, json_response['errors']))
                     continue
                 return json_response
             if response.status_code != 429:
                 # 429 TWEET_RATE_LIMIT_EXCEEDED
-                self.logger.error('Request returned an error: {} {}, try next token.'.format(
-                    response.status_code, response.text))
+                self.logger.error('{} request returned an error: {} {}, try next token.'.format(
+                    url, response.status_code, response.text))
+                continue
         self.logger.error('All tokens are unavailable, query fails: {}\n{}'.format(url, json.dumps(params, indent=2)))
         return None
 
