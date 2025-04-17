@@ -3,8 +3,7 @@ from typing import Union, List
 
 def interpolate(from_list: List[Union[float, int]], to_list: List[Union[float, int]], f: Union[float, int]):
     if len(from_list) != len(to_list):
-        raise Exception(
-            f"Mismatched interpolation arguments {from_list}: {to_list}")
+        raise Exception(f"Mismatched interpolation arguments {from_list}: {to_list}")
     out = []
     for i in range(len(from_list)):
         out.append(interpolate_num(from_list[i], to_list[i], f))

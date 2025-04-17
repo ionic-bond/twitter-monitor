@@ -62,7 +62,8 @@ class TwitterWatcher:
                     continue
                 json_response = response.json()
                 if 'errors' in json_response:
-                    self.logger.error('{} request error: {} {}, try next token.'.format(url, response.status_code, json_response['errors']))
+                    self.logger.error('{} request error: {} {}, try next token.'.format(
+                        url, response.status_code, json_response['errors']))
                     continue
                 return json_response
             if response.status_code != 429:

@@ -2,6 +2,7 @@ from typing import Union, List
 
 
 class Cubic:
+
     def __init__(self, curves: List[Union[float, int]]):
         self.curves = curves
 
@@ -38,11 +39,11 @@ class Cubic:
     def calculate(a, b, m):
         return 3.0 * a * (1 - m) * (1 - m) * m + 3.0 * b * (1 - m) * m * m + m * m * m
 
+
 # Example usage:
 # cubic_instance = Cubic([0.1, 0.2, 0.3, 0.4])
 # value = cubic_instance.get_value(0.5)
 # print(value)
-
 
 if __name__ == "__main__":
     pass

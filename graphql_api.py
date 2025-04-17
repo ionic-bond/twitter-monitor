@@ -46,19 +46,22 @@ class GraphqlAPI():
     @classmethod
     def init_client_transaction(cls):
         session = requests.Session()
-        session.headers = {'Authority': 'x.com',
-           'Accept-Language': 'en-US,en;q=0.9',
-           'Cache-Control': 'no-cache',
-           'Referer': 'https://x.com',
-           'User-Agent': cls.headers['User-Agent'],
-           'X-Twitter-Active-User': 'yes',
-           'X-Twitter-Client-Language': 'en'}
+        session.headers = {
+            'Authority': 'x.com',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Referer': 'https://x.com',
+            'User-Agent': cls.headers['User-Agent'],
+            'X-Twitter-Active-User': 'yes',
+            'X-Twitter-Client-Language': 'en'
+        }
         response = handle_x_migration(session)
         cls.ct = ClientTransaction(response)
-    
+
     @classmethod
     def get_clint_transaction_id(cls, method: str, url: str):
-        return cls.ct.generate_transaction_id(method=method, path=url.replace('https://x.com', '').replace('https://twitter.com', ''))
+        return cls.ct.generate_transaction_id(method=method,
+                                              path=url.replace('https://x.com', '').replace('https://twitter.com', ''))
 
     @classmethod
     @check_initialized
