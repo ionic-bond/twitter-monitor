@@ -71,7 +71,8 @@ class TwitterWatcher:
                 self.logger.error('{} request returned an error: {} {}, try next token.'.format(
                     url, response.status_code, response.text))
                 continue
-        self.logger.error('All tokens are unavailable, query fails: {}\n{}\n{}'.format(url, json.dumps(auth_headers, indent=2), json.dumps(params, indent=2)))
+        self.logger.error('All tokens are unavailable, query fails: {}\n{}\n{}'.format(
+            url, json.dumps(auth_headers, indent=2), json.dumps(params, indent=2)))
         return None
 
     def get_user_by_username(self, username: str, params: dict = {}) -> dict:
