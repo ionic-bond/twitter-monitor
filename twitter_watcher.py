@@ -48,8 +48,8 @@ class TwitterWatcher:
         params = _build_params({"variables": params, "features": features})
         for _ in range(self.token_number):
             self.current_token_index = (self.current_token_index + 1) % self.token_number
+            auth_headers = _get_auth_headers(headers, self.auth_cookie_list[self.current_token_index])
             try:
-                auth_headers = _get_auth_headers(headers, self.auth_cookie_list[self.current_token_index])
                 response = requests.request(method=method, url=url, headers=auth_headers, params=params, timeout=300)
             except requests.exceptions.ConnectionError as e:
                 self.logger.error('{} request error: {}, try next token.'.format(url, e))
@@ -71,7 +71,7 @@ class TwitterWatcher:
                 self.logger.error('{} request returned an error: {} {}, try next token.'.format(
                     url, response.status_code, response.text))
                 continue
-        self.logger.error('All tokens are unavailable, query fails: {}\n{}'.format(url, json.dumps(params, indent=2)))
+        self.logger.error('All tokens are unavailable, query fails: {}\n{}\n{}'.format(url, json.dumps(auth_headers, indent=2), json.dumps(params, indent=2)))
         return None
 
     def get_user_by_username(self, username: str, params: dict = {}) -> dict:
