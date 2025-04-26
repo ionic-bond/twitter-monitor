@@ -5,4 +5,4 @@ tzlocal==2.1
 bs4
 requests
 httpx
-lxml
+XClientTransaction

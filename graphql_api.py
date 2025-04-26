@@ -2,10 +2,10 @@ import logging
 import time
 
 import requests
-
-from utils import check_initialized
 from x_client_transaction.utils import handle_x_migration
 from x_client_transaction import ClientTransaction
+
+from utils import check_initialized
 
 
 class GraphqlAPI():
