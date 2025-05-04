@@ -1,8 +1,9 @@
 import logging
 import time
 
+import bs4
 import requests
-from x_client_transaction.utils import handle_x_migration
+from x_client_transaction.utils import generate_headers, handle_x_migration, get_ondemand_file_url
 from x_client_transaction import ClientTransaction
 
 from utils import check_initialized
@@ -46,17 +47,13 @@ class GraphqlAPI():
     @classmethod
     def init_client_transaction(cls):
         session = requests.Session()
-        session.headers = {
-            'Authority': 'x.com',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'no-cache',
-            'Referer': 'https://x.com',
-            'User-Agent': cls.headers['User-Agent'],
-            'X-Twitter-Active-User': 'yes',
-            'X-Twitter-Client-Language': 'en'
-        }
-        response = handle_x_migration(session)
-        cls.ct = ClientTransaction(response)
+        session.headers = generate_headers()
+        home_page = session.get(url="https://x.com")
+        home_page_response = bs4.BeautifulSoup(home_page.content, 'html.parser')
+        ondemand_file_url = get_ondemand_file_url(response=home_page_response)
+        ondemand_file = session.get(url=ondemand_file_url)
+        ondemand_file_response = bs4.BeautifulSoup(ondemand_file.content, 'html.parser')
+        cls.ct = ClientTransaction(home_page_response=home_page_response, ondemand_file_response=ondemand_file_response)
 
     @classmethod
     def get_clint_transaction_id(cls, method: str, url: str):
