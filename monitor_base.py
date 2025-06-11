@@ -1,6 +1,5 @@
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import List, Union
 
 from cqhttp_notifier import CqhttpMessage, CqhttpNotifier

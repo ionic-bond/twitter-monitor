@@ -1,7 +1,6 @@
 import time
-from datetime import datetime, timedelta
 from functools import cached_property
-from typing import List, Union
+from typing import Union
 
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
@@ -21,15 +20,15 @@ class ProfileParser():
 
     @cached_property
     def name(self) -> str:
-        return self.content.get('name', '')
+        return find_one(self.json_response, 'core').get('name', '')
 
     @cached_property
     def username(self) -> str:
-        return self.content.get('screen_name', '')
+        return find_one(self.json_response, 'core').get('screen_name', '')
 
     @cached_property
     def location(self) -> str:
-        return self.content.get('location', '')
+        return find_one(self.json_response, 'location').get('location', '')
 
     @cached_property
     def bio(self) -> str:
@@ -57,7 +56,7 @@ class ProfileParser():
 
     @cached_property
     def profile_image_url(self) -> str:
-        return self.content.get('profile_image_url_https', '').replace('_normal', '')
+        return find_one(self.json_response, 'avatar').get('image_url', '').replace('_normal', '')
 
     @cached_property
     def profile_banner_url(self) -> str:
