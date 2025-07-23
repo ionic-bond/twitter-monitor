@@ -41,10 +41,16 @@ class TweetMonitor(MonitorBase):
         if json_response is None:
             return None
         return find_all(json_response, 'tweet_results')
-    
+
     def get_tweet_detail(self, tweet_id: str) -> dict:
         api_name = 'TweetDetail'
-        params = {'focalTweetId': tweet_id, 'withVoice': True, "includePromotedContent":True,"withCommunity":True,"withBirdwatchNotes":True}
+        params = {
+            'focalTweetId': tweet_id,
+            'withVoice': True,
+            "includePromotedContent": True,
+            "withCommunity": True,
+            "withBirdwatchNotes": True
+        }
         json_response = self.twitter_watcher.query(api_name, params)
         return json_response
 
