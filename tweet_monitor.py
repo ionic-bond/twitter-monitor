@@ -41,6 +41,12 @@ class TweetMonitor(MonitorBase):
         if json_response is None:
             return None
         return find_all(json_response, 'tweet_results')
+    
+    def get_tweet_detail(self, tweet_id: str) -> dict:
+        api_name = 'TweetDetail'
+        params = {'focalTweetId': tweet_id, 'withVoice': True, "includePromotedContent":True,"withCommunity":True,"withBirdwatchNotes":True}
+        json_response = self.twitter_watcher.query(api_name, params)
+        return json_response
 
     def watch(self) -> bool:
         tweet_list = self.get_tweet_list()
@@ -65,21 +71,22 @@ class TweetMonitor(MonitorBase):
         self.last_tweet_id = max(self.last_tweet_id, max_tweet_id)
 
         for tweet in reversed(new_tweet_list):
-            text = parse_text_from_tweet(tweet)
-            retweet = find_one(tweet, 'retweeted_status_result')
-            quote = find_one(tweet, 'quoted_status_result')
+            tweet_id = find_one(tweet, 'rest_id')
+            tweet_detail = self.get_tweet_detail(tweet_id)
+            text = parse_text_from_tweet(tweet_detail)
+            retweet = find_one(tweet_detail, 'retweeted_status_result')
+            quote = find_one(tweet_detail, 'quoted_status_result')
             if retweet:
                 photo_url_list, video_url_list = parse_media_from_tweet(retweet)
             else:
-                photo_url_list, video_url_list = parse_media_from_tweet(tweet)
+                photo_url_list, video_url_list = parse_media_from_tweet(tweet_detail)
                 if quote:
                     quote_text = get_content(quote).get('full_text', '')
                     quote_user = find_one(quote, 'user_results')
-                    quote_username = get_content(quote_user).get('screen_name', '')
+                    quote_username = find_one(quote_user, 'screen_name')
                     text += '\n\nQuote: @{}: {}'.format(quote_username, quote_text)
-            source = find_one(tweet, 'source')
+            source = find_one(tweet_detail, 'source')
             text += '\n\nSource: {}'.format(convert_html_to_text(source))
-            tweet_id = find_one(tweet, 'rest_id')
             tweet_link = "https://x.com/{}/status/{}".format(self.user_id, tweet_id)
             text += f"\nLink: {tweet_link}"
             self.send_message(text, photo_url_list, video_url_list)
