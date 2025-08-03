@@ -52,6 +52,12 @@ class TweetMonitor(MonitorBase):
             "withBirdwatchNotes": True
         }
         json_response = self.twitter_watcher.query(api_name, params)
+        entries = find_one(json_response, 'entries')
+        if not entries:
+            return json_response
+        for entry in entries:
+            if find_one(entry, 'rest_id') == tweet_id:
+                return entry
         return json_response
 
     def watch(self) -> bool:
