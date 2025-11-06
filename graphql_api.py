@@ -54,10 +54,12 @@ class GraphqlAPI():
         ondemand_file = session.get(url=ondemand_file_url)
         ondemand_file_response = bs4.BeautifulSoup(ondemand_file.content, 'html.parser')
         try:
-            cls.ct = ClientTransaction(home_page_response=home_page_response, ondemand_file_response=ondemand_file_response)
+            cls.ct = ClientTransaction(home_page_response=home_page_response,
+                                       ondemand_file_response=ondemand_file_response)
         except Exception:
             ondemand_file_response = ondemand_file.text
-            cls.ct = ClientTransaction(home_page_response=home_page_response, ondemand_file_response=ondemand_file_response)
+            cls.ct = ClientTransaction(home_page_response=home_page_response,
+                                       ondemand_file_response=ondemand_file_response)
 
     @classmethod
     def get_clint_transaction_id(cls, method: str, url: str):
