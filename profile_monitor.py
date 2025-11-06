@@ -114,6 +114,7 @@ class ProfileMonitor(MonitorBase):
                          user_config=user_config,
                          cookies_dir=cookies_dir)
 
+        self.original_username = username
         json_response = self.get_user()
         while not json_response:
             time.sleep(60)
@@ -138,7 +139,6 @@ class ProfileMonitor(MonitorBase):
         self.monitoring_like_count = user_config.get('monitoring_like_count', False)
 
         self.title = title
-        self.original_username = username
         self.sub_monitor_up_to_date = {}
         for sub_monitor in SUB_MONITOR_LIST:
             self.sub_monitor_up_to_date[sub_monitor.monitor_type] = True
@@ -146,8 +146,10 @@ class ProfileMonitor(MonitorBase):
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
     def get_user(self) -> Union[dict, None]:
-        params = {'userId': self.user_id}
-        json_response = self.twitter_watcher.query('UserByRestId', params)
+        # params = {'userId': self.user_id}
+        # json_response = self.twitter_watcher.query('UserByRestId', params)
+        params = {'screen_name': self.original_username}
+        json_response = self.twitter_watcher.query('UserByScreenName', params)
         if not find_one(json_response, 'user'):
             return None
         return json_response
