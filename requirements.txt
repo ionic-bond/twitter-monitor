@@ -5,5 +5,5 @@ tzlocal==2.1
 bs4
 requests
 httpx
-XClientTransaction
+XClientTransaction>=1.0.1
 brotli
