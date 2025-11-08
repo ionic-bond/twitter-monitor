@@ -60,7 +60,11 @@ class TwitterWatcher:
                 if not response.text:
                     self.logger.error('{} response empty {}, try next token.'.format(url, response.status_code))
                     continue
-                json_response = response.json()
+                try:
+                    json_response = response.json()
+                except json.decoder.JSONDecodeError as e:
+                    print("Response JSON decode failed, text: {}".format(response.text))
+                    raise e
                 if 'errors' in json_response:
                     self.logger.error('{} request error: {} {}, try next token.'.format(
                         url, response.status_code, json_response['errors']))
@@ -111,5 +115,10 @@ class TwitterWatcher:
                 continue
             result[auth_cookie['username']] = (response.status_code == 200)
             if output_response:
-                print(json.dumps(response.json(), indent=2))
+                try:
+                    json_response = response.json()
+                except json.decoder.JSONDecodeError as e:
+                    print("Response JSON decode failed, text: {}".format(response.text))
+                    raise e
+                print(json.dumps(json_response, indent=2))
         return result
