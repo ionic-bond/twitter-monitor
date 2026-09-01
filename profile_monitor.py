@@ -15,7 +15,7 @@ SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
 class ProfileParser():
 
     def __init__(self, json_response: dict):
-        self.content = get_content(find_one(json_response, 'user'))
+        # self.content (legacy flat dict) is deprecated by Twitter's new GraphQL schema
         self.json_response = json_response
 
     @cached_property
@@ -32,27 +32,27 @@ class ProfileParser():
 
     @cached_property
     def bio(self) -> str:
-        return self.content.get('description', '')
+        return find_one(self.json_response, 'profile_bio').get('description', '')
 
     @cached_property
     def website(self) -> str:
-        return self.content.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+        return find_one(self.json_response, 'profile_bio').get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
-        return self.content.get('followers_count', 0)
+        return find_one(self.json_response, 'relationship_counts').get('followers', 0)
 
     @cached_property
     def following_count(self) -> int:
-        return self.content.get('friends_count', 0)
+        return find_one(self.json_response, 'relationship_counts').get('following', 0)
 
     @cached_property
     def like_count(self) -> int:
-        return self.content.get('favourites_count', 0)
+        return find_one(self.json_response, 'action_counts').get('favorites_count', 0)
 
     @cached_property
     def tweet_count(self) -> int:
-        return self.content.get('statuses_count', 0)
+        return find_one(self.json_response, 'tweet_counts').get('tweets', 0)
 
     @cached_property
     def profile_image_url(self) -> str:
@@ -60,11 +60,13 @@ class ProfileParser():
 
     @cached_property
     def profile_banner_url(self) -> str:
-        return self.content.get('profile_banner_url', '')
+        banner = find_one(self.json_response, 'banner')
+        return banner.get('image_url', '') if banner else ''
 
     @cached_property
     def pinned_tweet(self) -> str:
-        pinned_tweet = self.content.get('pinned_tweet_ids_str', [])
+        pinned_items = find_one(self.json_response, 'pinned_items')
+        pinned_tweet = pinned_items.get('tweet_ids_str', []) if pinned_items else []
         if not pinned_tweet:
             return None
         if isinstance(pinned_tweet, list):
@@ -73,7 +75,8 @@ class ProfileParser():
 
     @cached_property
     def highlighted_tweet_count(self) -> str:
-        return find_one(self.json_response, 'highlighted_tweets')
+        highlights = find_one(self.json_response, 'highlights_info')
+        return highlights.get('highlighted_tweets', '0') if highlights else '0'
 
 
 class ElementBuffer():
