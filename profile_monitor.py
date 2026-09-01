@@ -36,7 +36,8 @@ class ProfileParser():
 
     @cached_property
     def website(self) -> str:
-        return find_one(self.json_response, 'profile_bio').get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+        return find_one(self.json_response,
+                        'profile_bio').get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
 
     @cached_property
     def followers_count(self) -> int:
