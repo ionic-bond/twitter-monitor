@@ -58,14 +58,15 @@ class FollowingMonitor(MonitorBase):
         details_str += '\nTweets: {}'.format(parser.tweet_count)
         return details_str, parser.profile_image_url
 
-    def detect_changes(self, old_following_dict: dict, new_following_dict: dict) -> bool:
-        if old_following_dict.keys() == new_following_dict.keys():
-            return True
+    def _has_too_many_changes(self, old_following_dict: dict, new_following_dict: dict) -> bool:
         max_changes = max(len(old_following_dict) / 2, 10)
         dec_user_id_list = old_following_dict.keys() - new_following_dict.keys()
         inc_user_id_list = new_following_dict.keys() - old_following_dict.keys()
-        if len(dec_user_id_list) > max_changes or len(inc_user_id_list) > max_changes:
-            return False
+        return len(dec_user_id_list) > max_changes or len(inc_user_id_list) > max_changes
+
+    def detect_changes(self, old_following_dict: dict, new_following_dict: dict) -> None:
+        dec_user_id_list = old_following_dict.keys() - new_following_dict.keys()
+        inc_user_id_list = new_following_dict.keys() - old_following_dict.keys()
         if dec_user_id_list:
             self.logger.info('Unfollow: {}'.format(dec_user_id_list))
             for dec_user_id in dec_user_id_list:
@@ -82,13 +83,14 @@ class FollowingMonitor(MonitorBase):
                 if details_str:
                     message += '\n{}'.format(details_str)
                 self.send_message(message=message, photo_url_list=[profile_image_url] if profile_image_url else [])
-        return True
 
     def watch(self) -> bool:
         following_dict = self.get_all_following(self.user_id)
-        if not self.detect_changes(self.following_dict, following_dict):
+        if self._has_too_many_changes(self.following_dict, following_dict):
             return False
+        old_following_dict = self.following_dict
         self.following_dict = following_dict
+        self.detect_changes(old_following_dict, following_dict)
         self.update_last_watch_time()
         return True
 
