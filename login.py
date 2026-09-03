@@ -7,7 +7,7 @@ from utils import find_all
 from graphql_api import GraphqlAPI
 
 
-def update_token(client: Client, key: str, url: str, **kwargs) -> Client:
+def update_token(client: Client, key: str, url: str, **kwargs: object) -> Client:
     caller_name = sys._getframe(1).f_code.co_name
     try:
         headers = {
@@ -147,7 +147,7 @@ def confirm_email(client: Client) -> Client:
                         })
 
 
-def solve_confirmation_challenge(client: Client, confirmation_code, **kwargs) -> Client:
+def solve_confirmation_challenge(client: Client, confirmation_code: str, **kwargs: object) -> Client:
     return update_token(client,
                         'flow_token',
                         'https://api.x.com/1.1/onboarding/task.json',
@@ -164,7 +164,7 @@ def solve_confirmation_challenge(client: Client, confirmation_code, **kwargs) ->
                         })
 
 
-def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client:
+def execute_login_flow(client: Client, confirmation_code: str | None, **kwargs: object) -> Client | None:
     client = init_guest_token(client)
     for fn in [flow_start, flow_instrumentation, flow_username, flow_password]:
         client = fn(client)
@@ -185,7 +185,8 @@ def execute_login_flow(client: Client, confirmation_code, **kwargs) -> Client:
     return client
 
 
-def login(username: str, password: str, confirmation_code: str = None, **kwargs) -> Client:
+def login(username: str, password: str, confirmation_code: str | None = None,
+          **kwargs: object) -> Client:
     client = Client(cookies={
         "username": username,
         "password": password,

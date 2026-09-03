@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 class StatusTracker():
 
-    def __new__(self):
+    def __new__(cls):
         raise Exception('Do not instantiate this class!')
 
     monitors_status = dict()
@@ -13,21 +13,21 @@ class StatusTracker():
     logger = logging.getLogger('status')
 
     @classmethod
-    def update_monitor_status(cls, monitor_type: str, username: str):
+    def update_monitor_status(cls, monitor_type: str, username: str) -> None:
         key = '{}-{}'.format(monitor_type, username)
         cls.monitors_status[key] = datetime.now(timezone.utc)
 
     @classmethod
-    def get_monitor_status(cls, monitor_type: str, username: str):
+    def get_monitor_status(cls, monitor_type: str, username: str) -> datetime | None:
         key = '{}-{}'.format(monitor_type, username)
         return cls.monitors_status.get(key, None)
 
     @classmethod
-    def set_notifier_status(cls, notifier: str, status: bool):
+    def set_notifier_status(cls, notifier: str, status: bool) -> None:
         cls.notifiers_status[notifier] = status
 
     @classmethod
-    def check(cls) -> list:
+    def check(cls) -> list[str]:
         alerts = []
 
         monitor_time_threshold = datetime.now(timezone.utc) - timedelta(minutes=30)

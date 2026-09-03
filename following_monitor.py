@@ -1,5 +1,4 @@
 import time
-from typing import Union, Tuple, Dict
 
 from monitor_base import MonitorBase
 from utils import ProfileParser, find_all, find_one, get_cursor
@@ -8,7 +7,8 @@ from utils import ProfileParser, find_all, find_one, get_cursor
 class FollowingMonitor(MonitorBase):
     monitor_type = 'Following'
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
+                 cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,
@@ -22,7 +22,7 @@ class FollowingMonitor(MonitorBase):
             self.user_id, len(self.following_dict),
             [find_one(following, 'screen_name') for following in self.following_dict.values()]))
 
-    def get_all_following(self, user_id: int) -> Dict[str, dict]:
+    def get_all_following(self, user_id: str | int) -> dict:
         api_name = 'Following'
         params = {'userId': user_id, 'includePromotedContent': True, 'count': 1000}
         following_dict = dict()
@@ -48,7 +48,7 @@ class FollowingMonitor(MonitorBase):
 
         return following_dict
 
-    def parse_user_details(self, user: dict) -> Tuple[str, Union[str, None]]:
+    def parse_user_details(self, user: dict) -> tuple[str, str | None]:
         parser = ProfileParser(user)
         details_str = 'Name: {}'.format(parser.name)
         details_str += '\nBio: {}'.format(parser.bio)
@@ -59,7 +59,7 @@ class FollowingMonitor(MonitorBase):
         details_str += '\nTweets: {}'.format(parser.tweet_count)
         return details_str, parser.profile_image_url
 
-    def detect_changes(self, old_following_dict: set, new_following_dict: set) -> bool:
+    def detect_changes(self, old_following_dict: dict, new_following_dict: dict) -> bool:
         if old_following_dict.keys() == new_following_dict.keys():
             return True
         max_changes = max(len(old_following_dict) / 2, 10)

@@ -1,5 +1,4 @@
 import time
-from typing import Union
 
 from following_monitor import FollowingMonitor
 from like_monitor import LikeMonitor
@@ -14,18 +13,18 @@ SUB_MONITOR_LIST = [FollowingMonitor, LikeMonitor, TweetMonitor]
 class ElementBuffer():
     # For handling unstable twitter API results
 
-    def __init__(self, element, change_threshold: int = 2):
+    def __init__(self, element: object, change_threshold: int = 2) -> None:
         self.element = element
         self.change_threshold = change_threshold
         self.change_count = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.element)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.element)
 
-    def push(self, element) -> Union[dict, None]:
+    def push(self, element: object) -> dict | None:
         if element == self.element:
             self.change_count = 0
             return None
@@ -41,7 +40,8 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
+                 cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,
@@ -80,7 +80,7 @@ class ProfileMonitor(MonitorBase):
 
         self.logger.info('Init profile monitor succeed.\n{}'.format(self.__dict__))
 
-    def get_user(self) -> Union[dict, None]:
+    def get_user(self) -> dict | None:
         # params = {'userId': self.user_id}
         # json_response = self.twitter_watcher.query('UserByRestId', params)
         params = {'screen_name': self.original_username}
@@ -89,7 +89,7 @@ class ProfileMonitor(MonitorBase):
             return None
         return json_response
 
-    def detect_change_and_update(self, user: dict):
+    def detect_change_and_update(self, user: dict) -> None:
         parser = ProfileParser(user)
 
         result = self.name.push(parser.name)
@@ -158,7 +158,7 @@ class ProfileMonitor(MonitorBase):
         if result:
             self.send_message(message=MESSAGE_TEMPLATE.format('Highlighted tweet', result['old'], result['new']))
 
-    def watch_sub_monitor(self):
+    def watch_sub_monitor(self) -> None:
         for sub_monitor in SUB_MONITOR_LIST:
             sub_monitor_type = sub_monitor.monitor_type
             sub_monitor_instance = MonitorManager.get(monitor_type=sub_monitor_type, username=self.title)

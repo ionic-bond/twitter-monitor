@@ -13,7 +13,8 @@ def _verify_tweet_user_id(tweet: dict, user_id: str) -> bool:
 class TweetMonitor(MonitorBase):
     monitor_type = 'Tweet'
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
+                 cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,
@@ -34,7 +35,7 @@ class TweetMonitor(MonitorBase):
         self.logger.info('Init tweet monitor succeed.\nUser id: {}\nLast tweet: {}'.format(
             self.user_id, self.last_tweet_id))
 
-    def get_tweet_list(self) -> dict:
+    def get_tweet_list(self) -> list[dict] | None:
         api_name = 'UserTweetsAndReplies'
         params = {'userId': self.user_id, 'includePromotedContent': True, 'withVoice': True, 'count': 1000}
         json_response = self.twitter_watcher.query(api_name, params)

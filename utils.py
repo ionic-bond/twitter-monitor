@@ -1,7 +1,7 @@
 from collections import deque
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Tuple
+from typing import Any, Callable
 
 from bs4 import BeautifulSoup
 
@@ -28,7 +28,7 @@ def get_video_url_from_media(media: dict) -> str:
     return video_url
 
 
-def parse_media_from_tweet(tweet: dict) -> Tuple[list, list]:
+def parse_media_from_tweet(tweet: dict) -> tuple[list[str], list[str]]:
     photo_url_list = []
     video_url_list = []
     tweet_content = get_content(tweet)
@@ -52,16 +52,16 @@ def parse_username_from_tweet(tweet: dict) -> str:
     return find_one(user, 'rest_id')
 
 
-def parse_create_time_from_tweet(tweet: dict) -> datetime.time:
+def parse_create_time_from_tweet(tweet: dict) -> datetime:
     created_at = find_one(get_content(tweet), 'created_at')
     if not created_at:
         return datetime.fromtimestamp(0).replace(tzinfo=timezone.utc)
     return datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
 
 
-def find_all(obj: any, key: str) -> list:
+def find_all(obj: object, key: str) -> list[Any]:
     # DFS
-    def dfs(obj: any, key: str, res: list) -> list:
+    def dfs(obj: object, key: str, res: list[Any]) -> list[Any]:
         if not obj:
             return res
         if isinstance(obj, list):
@@ -78,7 +78,7 @@ def find_all(obj: any, key: str) -> list:
     return dfs(obj, key, [])
 
 
-def find_one(obj: any, key: str) -> any:
+def find_one(obj: object, key: str) -> Any:
     # BFS
     que = deque([obj])
     while len(que):
@@ -95,7 +95,7 @@ def find_one(obj: any, key: str) -> any:
 
 class ProfileParser():
 
-    def __init__(self, json_response: dict):
+    def __init__(self, json_response: dict) -> None:
         self.json_response = json_response
 
     @cached_property
@@ -149,7 +149,7 @@ class ProfileParser():
         return banner.get('image_url', '') if banner else ''
 
     @cached_property
-    def pinned_tweet(self) -> str:
+    def pinned_tweet(self) -> str | None:
         pinned_items = find_one(self.json_response, 'pinned_items')
         pinned_tweet = pinned_items.get('tweet_ids_str', []) if pinned_items else []
         if not pinned_tweet:
@@ -168,7 +168,7 @@ def get_content(obj: dict) -> dict:
     return find_one(obj, 'legacy')
 
 
-def get_cursor(obj: any) -> str:
+def get_cursor(obj: object) -> str | None:
     entries = find_one(obj, 'entries')
     for entry in entries:
         entry_id = entry.get('entryId', '')
@@ -176,9 +176,9 @@ def get_cursor(obj: any) -> str:
             return entry.get('content', {}).get('value', '')
 
 
-def check_initialized(cls_method):
+def check_initialized(cls_method: Callable[..., Any]) -> Callable[..., Any]:
 
-    def wrapper(cls, *args, **kwargs):
+    def wrapper(cls: type[Any], *args: object, **kwargs: object) -> Any:
         if cls.initialized:
             return cls_method(cls, *args, **kwargs)
         else:

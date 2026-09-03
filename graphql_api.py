@@ -23,7 +23,7 @@ class GraphqlAPI():
         cls.initialized = True
 
     @classmethod
-    def update_api_data(cls):
+    def update_api_data(cls) -> bool:
         response = requests.get(
             'https://github.com/ionic-bond/TwitterInternalAPIDocument/raw/master/docs/json/API.json', timeout=300)
         if response.status_code != 200:
@@ -45,7 +45,7 @@ class GraphqlAPI():
         return True
 
     @classmethod
-    def init_client_transaction(cls):
+    def init_client_transaction(cls) -> None:
         session = requests.Session()
         session.headers = generate_headers()
         home_page = session.get(url="https://x.com/home")
@@ -62,13 +62,13 @@ class GraphqlAPI():
                                        ondemand_file_response=ondemand_file_response)
 
     @classmethod
-    def get_clint_transaction_id(cls, method: str, url: str):
+    def get_clint_transaction_id(cls, method: str, url: str) -> str:
         return cls.ct.generate_transaction_id(method=method,
                                               path=url.replace('https://x.com', '').replace('https://twitter.com', ''))
 
     @classmethod
     @check_initialized
-    def get_api_data(cls, api_name):
+    def get_api_data(cls, api_name: str) -> tuple[str, str, dict[str, str], dict]:
         if api_name not in cls.graphql_api_data:
             raise ValueError('Unkonw API name: {}'.format(api_name))
 

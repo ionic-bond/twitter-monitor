@@ -1,7 +1,6 @@
 import logging
 import requests
 
-from typing import List, Union
 
 from notifier_base import Message, NotifierBase
 
@@ -16,10 +15,10 @@ def _remove_http(text: str) -> str:
 class CqhttpMessage(Message):
 
     def __init__(self,
-                 url_list: List[str],
+                 url_list: list[str],
                  text: str,
-                 photo_url_list: Union[List[str], None] = None,
-                 video_url_list: Union[List[str], None] = None):
+                 photo_url_list: list[str] | None = None,
+                 video_url_list: list[str] | None = None) -> None:
         super().__init__(text, photo_url_list, video_url_list)
         self.url_list = url_list
 
@@ -28,14 +27,14 @@ class CqhttpNotifier(NotifierBase):
     notifier_name = 'Cqhttp'
 
     @classmethod
-    def init(cls, token: str, logger_name: str):
+    def init(cls, token: str, logger_name: str) -> None:
         cls.headers = {'Authorization': 'Bearer {}'.format(token)} if token else None
         cls.logger = logging.getLogger('{}'.format(logger_name))
         cls.logger.info('Init cqhttp notifier succeed.')
         super().init()
 
     @classmethod
-    def _post_request_to_cqhttp(cls, url: str, data: dict):
+    def _post_request_to_cqhttp(cls, url: str, data: dict) -> None:
         try:
             response = requests.post(url, headers=cls.headers, data=data, timeout=60)
         except requests.exceptions.ConnectTimeout:
@@ -53,22 +52,22 @@ class CqhttpNotifier(NotifierBase):
                 response.status_code, response.text, url, str(data)))
 
     @classmethod
-    def _send_text_to_single_chat(cls, url: str, text: str):
+    def _send_text_to_single_chat(cls, url: str, text: str) -> None:
         data = {'message': _remove_http(text)}
         cls._post_request_to_cqhttp(url, data)
 
     @classmethod
-    def _send_photo_to_single_chat(cls, url: str, photo_url: str):
+    def _send_photo_to_single_chat(cls, url: str, photo_url: str) -> None:
         data = {'message': '[CQ:image,file={}]'.format(photo_url)}
         cls._post_request_to_cqhttp(url, data)
 
     @classmethod
-    def _send_video_to_single_chat(cls, url: str, video_url: str):
+    def _send_video_to_single_chat(cls, url: str, video_url: str) -> None:
         data = {'message': '[CQ:video,file={}]'.format(video_url)}
         cls._post_request_to_cqhttp(url, data)
 
     @classmethod
-    def send_message(cls, message: CqhttpMessage):
+    def send_message(cls, message: CqhttpMessage) -> None:
         assert cls.initialized
         assert isinstance(message, CqhttpMessage)
         for url in message.url_list:

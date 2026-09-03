@@ -3,7 +3,6 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
-from typing import List, Union
 
 import telegram
 from retry import retry
@@ -13,12 +12,11 @@ from notifier_base import Message, NotifierBase
 
 
 class TelegramMessage(Message):
-
     def __init__(self,
-                 chat_id_list: List[int],
+                 chat_id_list: list[int | str],
                  text: str,
-                 photo_url_list: Union[List[str], None] = None,
-                 video_url_list: Union[List[str], None] = None):
+                 photo_url_list: list[str] | None = None,
+                 video_url_list: list[str] | None = None) -> None:
         super().__init__(text, photo_url_list, video_url_list)
         self.chat_id_list = chat_id_list
 
@@ -27,7 +25,7 @@ class TelegramNotifier(NotifierBase):
     notifier_name = 'Telegram'
 
     @classmethod
-    def init(cls, token: str, logger_name: str):
+    def init(cls, token: str, logger_name: str) -> None:
         assert token
         cls.bot = telegram.Bot(token=token, request=telegram.utils.request.Request(con_pool_size=2))
         cls.logger = logging.getLogger('{}'.format(logger_name))
@@ -38,8 +36,8 @@ class TelegramNotifier(NotifierBase):
 
     @classmethod
     @retry((RetryAfter, TimedOut, NetworkError), delay=10, tries=10)
-    def _send_message_to_single_chat(cls, chat_id: str, text: str, photo_url_list: Union[List[str], None],
-                                     video_url_list: Union[List[str], None]):
+    def _send_message_to_single_chat(cls, chat_id: int | str, text: str, photo_url_list: list[str] | None,
+                                     video_url_list: list[str] | None) -> None:
         if video_url_list:
             cls.bot.send_video(chat_id=chat_id, video=video_url_list[0], caption=text, timeout=60)
         elif photo_url_list:
@@ -54,7 +52,7 @@ class TelegramNotifier(NotifierBase):
             cls.bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True, timeout=60)
 
     @classmethod
-    def send_message(cls, message: TelegramMessage):
+    def send_message(cls, message: TelegramMessage) -> None:
         assert cls.initialized
         assert isinstance(message, TelegramMessage)
         for chat_id in message.chat_id_list:
@@ -67,18 +65,18 @@ class TelegramNotifier(NotifierBase):
 
     @classmethod
     @retry((RetryAfter, TimedOut, NetworkError), delay=60)
-    def _get_updates(cls, offset=None) -> List[telegram.Update]:
+    def _get_updates(cls, offset: int | None = None) -> list[telegram.Update]:
         return cls.bot.get_updates(offset=offset)
 
     @classmethod
-    def _get_new_updates(cls) -> List[telegram.Update]:
+    def _get_new_updates(cls) -> list[telegram.Update]:
         updates = cls._get_updates(offset=cls.update_offset)
         if updates:
             cls.update_offset = updates[-1].update_id + 1
         return updates
 
     @staticmethod
-    def _get_new_update_offset(updates: List[telegram.Update]) -> Union[int, None]:
+    def _get_new_update_offset(updates: list[telegram.Update]) -> int | None:
         if not updates:
             return None
         return updates[-1].update_id + 1
@@ -105,7 +103,7 @@ class TelegramNotifier(NotifierBase):
             time.sleep(10)
 
     @classmethod
-    def listen_exit_command(cls, chat_id: str):
+    def listen_exit_command(cls, chat_id: int | str) -> None:
 
         def _listen_exit_command():
             starting_time = datetime.now(timezone.utc)
@@ -128,7 +126,7 @@ class TelegramNotifier(NotifierBase):
         threading.Thread(target=_listen_exit_command, daemon=True).start()
 
 
-def send_alert(token: str, chat_id: int, message: str):
+def send_alert(token: str, chat_id: int | str, message: str) -> None:
     # The telegram notifier may also be wrong, so initialize the telegram bot separately.
     bot = telegram.Bot(token=token)
     bot.send_message(chat_id=chat_id, text=message, timeout=60)

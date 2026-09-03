@@ -1,7 +1,5 @@
 import time
 
-from typing import List, Union, Set
-
 from monitor_base import MonitorBase
 from utils import parse_media_from_tweet, parse_text_from_tweet, find_all, find_one
 
@@ -10,11 +8,11 @@ def _get_like_id(like: dict) -> str:
     return find_one(like, 'rest_id')
 
 
-def _get_like_id_set(like_list: list) -> Set[str]:
+def _get_like_id_set(like_list: list[dict]) -> set[str]:
     return set(_get_like_id(like) for like in like_list)
 
 
-def _filter_advertisers(like_list: list) -> list:
+def _filter_advertisers(like_list: list[dict]) -> list[dict]:
     result = []
     for like in like_list:
         if find_one(like, 'card'):
@@ -35,7 +33,8 @@ class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     like_id_set_max_size = 1000
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str):
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
+                 cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,
@@ -52,7 +51,7 @@ class LikeMonitor(MonitorBase):
         self.logger.info('Init like monitor succeed.\nUser id: {}\nExisting {} likes: {}'.format(
             self.user_id, len(self.existing_like_id_set), self.existing_like_id_set))
 
-    def get_like_list(self) -> Union[list, None]:
+    def get_like_list(self) -> list[dict] | None:
         api_name = 'Likes'
         params = {'userId': self.user_id, 'includePromotedContent': True, 'count': 1000}
         json_response = self.twitter_watcher.query(api_name, params)

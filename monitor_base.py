@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Union
+from datetime import datetime
+from typing import Any
 
 from cqhttp_notifier import CqhttpMessage, CqhttpNotifier
 from discord_notifier import DiscordMessage, DiscordNotifier
@@ -10,9 +11,11 @@ from twitter_watcher import TwitterWatcher
 
 
 class MonitorBase(ABC):
+    username: Any
 
-    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict, user_config: dict,
-                 cookies_dir: str):
+    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict,
+                 user_config: dict,
+                 cookies_dir: str) -> None:
         logger_name = '{}-{}'.format(title, monitor_type)
         self.logger = logging.getLogger(logger_name)
         self.twitter_watcher = TwitterWatcher(token_config.get('twitter_auth_username_list', []), cookies_dir)
@@ -26,16 +29,16 @@ class MonitorBase(ABC):
         self.message_prefix = '[{}][{}]'.format(username, monitor_type)
         self.update_last_watch_time()
 
-    def update_last_watch_time(self):
+    def update_last_watch_time(self) -> None:
         StatusTracker.update_monitor_status(self.monitor_type, self.username)
 
-    def get_last_watch_time(self):
+    def get_last_watch_time(self) -> datetime | None:
         return StatusTracker.get_monitor_status(self.monitor_type, self.username)
 
     def send_message(self,
                      message: str,
-                     photo_url_list: Union[List[str], None] = None,
-                     video_url_list: Union[List[str], None] = None):
+                     photo_url_list: list[str] | None = None,
+                     video_url_list: list[str] | None = None) -> None:
         message = '{} {}'.format(self.message_prefix, message)
         self.logger.info('Sending message: {}\n'.format(message))
         if photo_url_list:
@@ -75,18 +78,18 @@ class MonitorBase(ABC):
 
 
 class MonitorManager():
-    monitors = None
+    monitors: dict[str, dict[str, MonitorBase]] | None = None
 
-    def __new__(self):
+    def __new__(cls):
         raise Exception('Do not instantiate this class!')
 
     @classmethod
-    def init(cls, monitors: dict):
+    def init(cls, monitors: dict[str, dict[str, MonitorBase]]) -> None:
         cls.monitors = monitors
         cls.logger = logging.getLogger('monitor-caller')
 
     @classmethod
-    def get(cls, monitor_type: str, username: str) -> Union[MonitorBase, None]:
+    def get(cls, monitor_type: str, username: str) -> MonitorBase | None:
         assert cls.monitors is not None
         monitors_by_type = cls.monitors.get(monitor_type, None)
         assert monitors_by_type is not None
