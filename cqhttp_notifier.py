@@ -36,7 +36,18 @@ class CqhttpNotifier(NotifierBase):
 
     @classmethod
     def _post_request_to_cqhttp(cls, url: str, data: dict):
-        response = requests.post(url, headers=cls.headers, data=data, timeout=60)
+        try:
+            response = requests.post(url, headers=cls.headers, data=data, timeout=60)
+        except requests.exceptions.ConnectTimeout:
+            raise
+        except requests.exceptions.ConnectionError as e:
+            if 'Connection refused' in str(e):
+                raise
+            cls.logger.warning(e)
+            return
+        except requests.exceptions.Timeout as e:
+            cls.logger.warning(e)
+            return
         if response.status_code != 200 or response.json().get('status', '') != 'ok':
             raise RuntimeError('Post request error: {}, {}\nurl: {}\ndata: {}'.format(
                 response.status_code, response.text, url, str(data)))
