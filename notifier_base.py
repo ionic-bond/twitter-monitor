@@ -7,6 +7,7 @@ from utils import check_initialized
 
 
 class Message:
+
     def __init__(self,
                  text: str,
                  photo_url_list: list[str] | None = None,

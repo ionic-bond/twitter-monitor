@@ -12,6 +12,7 @@ from notifier_base import Message, NotifierBase
 
 
 class TelegramMessage(Message):
+
     def __init__(self,
                  chat_id_list: list[int | str],
                  text: str,

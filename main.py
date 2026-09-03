@@ -174,8 +174,8 @@ def run(log_dir: str, cookies_dir: str, token_config_path: str, monitoring_confi
 @click.option('--telegram_chat_id')
 @click.option('--test_username', default='X')
 @click.option('--output_response', is_flag=True, default=False)
-def check_tokens(cookies_dir: str, token_config_path: str, telegram_chat_id: int | str | None,
-                 test_username: str, output_response: bool) -> None:
+def check_tokens(cookies_dir: str, token_config_path: str, telegram_chat_id: int | str | None, test_username: str,
+                 output_response: bool) -> None:
     with open(os.path.join(token_config_path), 'r') as token_config_file:
         token_config = json.load(token_config_file)
         telegram_bot_token = token_config.get('telegram_bot_token', '')

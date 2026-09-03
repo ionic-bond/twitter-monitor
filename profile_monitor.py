@@ -40,8 +40,7 @@ class ElementBuffer():
 class ProfileMonitor(MonitorBase):
     monitor_type = 'Profile'
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
-                 cookies_dir: str) -> None:
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,

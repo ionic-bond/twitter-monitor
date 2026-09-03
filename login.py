@@ -185,8 +185,7 @@ def execute_login_flow(client: Client, confirmation_code: str | None, **kwargs: 
     return client
 
 
-def login(username: str, password: str, confirmation_code: str | None = None,
-          **kwargs: object) -> Client:
+def login(username: str, password: str, confirmation_code: str | None = None, **kwargs: object) -> Client:
     client = Client(cookies={
         "username": username,
         "password": password,

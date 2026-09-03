@@ -13,8 +13,7 @@ from twitter_watcher import TwitterWatcher
 class MonitorBase(ABC):
     username: Any
 
-    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict,
-                 user_config: dict,
+    def __init__(self, monitor_type: str, username: str, title: str, token_config: dict, user_config: dict,
                  cookies_dir: str) -> None:
         logger_name = '{}-{}'.format(title, monitor_type)
         self.logger = logging.getLogger(logger_name)

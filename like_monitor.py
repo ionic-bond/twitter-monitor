@@ -33,8 +33,7 @@ class LikeMonitor(MonitorBase):
     monitor_type = 'Like'
     like_id_set_max_size = 1000
 
-    def __init__(self, username: str, title: str, token_config: dict, user_config: dict,
-                 cookies_dir: str) -> None:
+    def __init__(self, username: str, title: str, token_config: dict, user_config: dict, cookies_dir: str) -> None:
         super().__init__(monitor_type=self.monitor_type,
                          username=username,
                          title=title,

@@ -1,7 +1,6 @@
 import logging
 import requests
 
-
 from notifier_base import Message, NotifierBase
 
 
