@@ -2,7 +2,7 @@ import time
 from typing import Union, Tuple, Dict
 
 from monitor_base import MonitorBase
-from utils import find_all, find_one, get_cursor, get_content
+from utils import ProfileParser, find_all, find_one, get_cursor
 
 
 class FollowingMonitor(MonitorBase):
@@ -49,16 +49,15 @@ class FollowingMonitor(MonitorBase):
         return following_dict
 
     def parse_user_details(self, user: dict) -> Tuple[str, Union[str, None]]:
-        content = get_content(user)
-        details_str = 'Name: {}'.format(find_one(user, 'core').get('name', ''))
-        details_str += '\nBio: {}'.format(content.get('description', ''))
-        details_str += '\nWebsite: {}'.format(
-            content.get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', ''))
-        details_str += '\nJoined at: {}'.format(find_one(user, 'core').get('created_at', ''))
-        details_str += '\nFollowing: {}'.format(content.get('friends_count', -1))
-        details_str += '\nFollowers: {}'.format(content.get('followers_count', -1))
-        details_str += '\nTweets: {}'.format(content.get('statuses_count', -1))
-        return details_str, find_one(user, 'avatar').get('image_url', '').replace('_normal', '')
+        parser = ProfileParser(user)
+        details_str = 'Name: {}'.format(parser.name)
+        details_str += '\nBio: {}'.format(parser.bio)
+        details_str += '\nWebsite: {}'.format(parser.website)
+        details_str += '\nJoined at: {}'.format(parser.created_at)
+        details_str += '\nFollowing: {}'.format(parser.following_count)
+        details_str += '\nFollowers: {}'.format(parser.followers_count)
+        details_str += '\nTweets: {}'.format(parser.tweet_count)
+        return details_str, parser.profile_image_url
 
     def detect_changes(self, old_following_dict: set, new_following_dict: set) -> bool:
         if old_following_dict.keys() == new_following_dict.keys():

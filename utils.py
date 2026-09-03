@@ -1,5 +1,6 @@
 from collections import deque
 from datetime import datetime, timezone
+from functools import cached_property
 from typing import Tuple
 
 from bs4 import BeautifulSoup
@@ -90,6 +91,77 @@ def find_one(obj: any, key: str) -> any:
             for v in obj.values():
                 que.append(v)
     return None
+
+
+class ProfileParser():
+
+    def __init__(self, json_response: dict):
+        self.json_response = json_response
+
+    @cached_property
+    def name(self) -> str:
+        return find_one(self.json_response, 'core').get('name', '')
+
+    @cached_property
+    def username(self) -> str:
+        return find_one(self.json_response, 'core').get('screen_name', '')
+
+    @cached_property
+    def location(self) -> str:
+        return find_one(self.json_response, 'location').get('location', '')
+
+    @cached_property
+    def created_at(self) -> str:
+        return find_one(self.json_response, 'core').get('created_at', '')
+
+    @cached_property
+    def bio(self) -> str:
+        return find_one(self.json_response, 'profile_bio').get('description', '')
+
+    @cached_property
+    def website(self) -> str:
+        return find_one(self.json_response,
+                        'profile_bio').get('entities', {}).get('url', {}).get('urls', [{}])[0].get('expanded_url', '')
+
+    @cached_property
+    def followers_count(self) -> int:
+        return find_one(self.json_response, 'relationship_counts').get('followers', 0)
+
+    @cached_property
+    def following_count(self) -> int:
+        return find_one(self.json_response, 'relationship_counts').get('following', 0)
+
+    @cached_property
+    def like_count(self) -> int:
+        return find_one(self.json_response, 'action_counts').get('favorites_count', 0)
+
+    @cached_property
+    def tweet_count(self) -> int:
+        return find_one(self.json_response, 'tweet_counts').get('tweets', 0)
+
+    @cached_property
+    def profile_image_url(self) -> str:
+        return find_one(self.json_response, 'avatar').get('image_url', '').replace('_normal', '')
+
+    @cached_property
+    def profile_banner_url(self) -> str:
+        banner = find_one(self.json_response, 'banner')
+        return banner.get('image_url', '') if banner else ''
+
+    @cached_property
+    def pinned_tweet(self) -> str:
+        pinned_items = find_one(self.json_response, 'pinned_items')
+        pinned_tweet = pinned_items.get('tweet_ids_str', []) if pinned_items else []
+        if not pinned_tweet:
+            return None
+        if isinstance(pinned_tweet, list):
+            return pinned_tweet[0]
+        return pinned_tweet
+
+    @cached_property
+    def highlighted_tweet_count(self) -> str:
+        highlights = find_one(self.json_response, 'highlights_info')
+        return highlights.get('highlighted_tweets', '0') if highlights else '0'
 
 
 def get_content(obj: dict) -> dict:
