@@ -48,7 +48,7 @@ class GraphqlAPI():
     def init_client_transaction(cls) -> None:
         session = requests.Session()
         session.headers = generate_headers()
-        home_page = session.get(url="https://x.com/home")
+        home_page = session.get(url="https://x.com/i/jf/")
         home_page_response = bs4.BeautifulSoup(home_page.content, 'html.parser')
         ondemand_file_url = get_ondemand_file_url(response=home_page_response)
         ondemand_file = session.get(url=ondemand_file_url)
