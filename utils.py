@@ -45,6 +45,12 @@ def parse_media_from_tweet(tweet: dict) -> tuple[list[str], list[str]]:
 
 
 def parse_text_from_tweet(tweet: dict) -> str:
+    note_tweet = find_one(tweet, 'note_tweet')
+    if isinstance(note_tweet, dict):
+        full_text = note_tweet.get('note_tweet_results', {}).get('result', {}).get('text')
+        if full_text:
+            return convert_html_to_text(full_text)
+
     tweet_content = get_content(tweet)
     return convert_html_to_text(tweet_content.get('full_text', ''))
 
