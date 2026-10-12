@@ -85,18 +85,26 @@ class TweetMonitor(MonitorBase):
         for tweet in reversed(new_tweet_list):
             tweet_id = find_one(tweet, 'rest_id')
             tweet_detail = self.get_tweet_detail(tweet_id)
-            text = parse_text_from_tweet(tweet_detail)
             retweet = find_one(tweet_detail, 'retweeted_status_result')
             quote = find_one(tweet_detail, 'quoted_status_result')
             if retweet:
+                retweet_text = parse_text_from_tweet(retweet)
+                retweet_user = find_one(retweet, 'user_results')
+                retweet_username = find_one(retweet_user, 'screen_name')
+                text = f"RT @{retweet_username}: {retweet_text}"
                 photo_url_list, video_url_list = parse_media_from_tweet(retweet)
             else:
+                text = parse_text_from_tweet(tweet_detail)
                 photo_url_list, video_url_list = parse_media_from_tweet(tweet_detail)
                 if quote:
-                    quote_text = get_content(quote).get('full_text', '')
+                    if len(text) > 600:
+                        text = text[:600] + '…'
+                    quote_text = parse_text_from_tweet(quote)
                     quote_user = find_one(quote, 'user_results')
                     quote_username = find_one(quote_user, 'screen_name')
                     text += '\n\nQuote: @{}: {}'.format(quote_username, quote_text)
+            if len(text) > 800:
+                text = text[:800] + '…'
             source = find_one(tweet_detail, 'source')
             footer = []
             if source:
