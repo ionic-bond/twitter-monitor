@@ -87,25 +87,44 @@ class TweetMonitor(MonitorBase):
             tweet_detail = self.get_tweet_detail(tweet_id)
             retweet = find_one(tweet_detail, 'retweeted_status_result')
             quote = find_one(tweet_detail, 'quoted_status_result')
+            reply_to_id = find_one(tweet_detail, 'in_reply_to_status_id_str', ignore_keys={'quoted_status_result', 'retweeted_status_result'})
+            reply_to_tweet = None
+            if reply_to_id:
+                try:
+                    time.sleep(2)
+                    reply_to_tweet = self.get_tweet_detail(reply_to_id)
+                except Exception as e:
+                    pass
             if retweet:
                 retweet_text = parse_text_from_tweet(retweet)
                 retweet_user = find_one(retweet, 'user_results')
-                retweet_username = find_one(retweet_user, 'screen_name')
+                retweet_username = find_one(retweet_user, 'screen_name') or ''
                 text = f"RT @{retweet_username}: {retweet_text}"
                 photo_url_list, video_url_list = parse_media_from_tweet(retweet)
             else:
                 text = parse_text_from_tweet(tweet_detail)
                 photo_url_list, video_url_list = parse_media_from_tweet(tweet_detail)
-                if quote:
+                if quote and reply_to_tweet:
+                    if len(text) > 400:
+                        text = text[:400] + '…'
+                elif quote or reply_to_tweet:
                     if len(text) > 600:
                         text = text[:600] + '…'
+                if quote:
                     quote_text = parse_text_from_tweet(quote)
                     quote_user = find_one(quote, 'user_results')
-                    quote_username = find_one(quote_user, 'screen_name')
+                    quote_username = find_one(quote_user, 'screen_name') or ''
                     text += '\n\nQuote: @{}: {}'.format(quote_username, quote_text)
+                if reply_to_tweet:
+                    if len(text) > 600:
+                        text = text[:600] + '…'
+                    reply_text = parse_text_from_tweet(reply_to_tweet)
+                    reply_user = find_one(reply_to_tweet, 'user_results')
+                    reply_username = find_one(reply_user, 'screen_name') or ''
+                    text += '\n\nReply to: @{}: {}'.format(reply_username, reply_text)
             if len(text) > 800:
                 text = text[:800] + '…'
-            source = find_one(tweet_detail, 'source')
+            source = find_one(tweet_detail, 'source', ignore_keys={'quoted_status_result', 'retweeted_status_result'})
             footer = []
             if source:
                 footer.append('Source: {}'.format(convert_html_to_text(source)))
