@@ -45,7 +45,7 @@ def parse_media_from_tweet(tweet: dict) -> tuple[list[str], list[str]]:
 
 
 def parse_text_from_tweet(tweet: dict) -> str:
-    note_tweet = find_one(tweet, 'note_tweet')
+    note_tweet = find_one(tweet, 'note_tweet', ignore_keys={'quoted_status_result', 'retweeted_status_result'})
     if isinstance(note_tweet, dict):
         full_text = note_tweet.get('note_tweet_results', {}).get('result', {}).get('text')
         if full_text:
@@ -87,7 +87,10 @@ def find_all(obj: object, key: str) -> list[Any]:
     return dfs(obj, key, [])
 
 
-def find_one(obj: object, key: str) -> Any:
+def find_one(obj: object, key: str, ignore_keys: set = None) -> Any:
+    if ignore_keys is None:
+        ignore_keys = set()
+        
     # BFS
     que = deque([obj])
     while len(que):
@@ -97,8 +100,9 @@ def find_one(obj: object, key: str) -> Any:
         if isinstance(obj, dict):
             if key in obj:
                 return obj[key]
-            for v in obj.values():
-                que.append(v)
+            for k, v in obj.items():
+                if k not in ignore_keys:
+                    que.append(v)
     return None
 
 
