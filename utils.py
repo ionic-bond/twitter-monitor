@@ -90,7 +90,7 @@ def find_all(obj: object, key: str) -> list[Any]:
 def find_one(obj: object, key: str, ignore_keys: set = None) -> Any:
     if ignore_keys is None:
         ignore_keys = set()
-        
+
     # BFS
     que = deque([obj])
     while len(que):
