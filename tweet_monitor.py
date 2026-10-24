@@ -60,6 +60,18 @@ class TweetMonitor(MonitorBase):
                 return entry
         return json_response
 
+    def _get_reply_to_tweet(self, tweet_detail: dict) -> dict | None:
+        reply_to_id = find_one(tweet_detail,
+                               'in_reply_to_status_id_str',
+                               ignore_keys={'quoted_status_result', 'retweeted_status_result'})
+        if reply_to_id:
+            try:
+                time.sleep(2)
+                return self.get_tweet_detail(reply_to_id)
+            except Exception:
+                pass
+        return None
+
     def watch(self) -> bool:
         tweet_list = self.get_tweet_list()
         if tweet_list is None:
@@ -87,14 +99,7 @@ class TweetMonitor(MonitorBase):
             tweet_detail = self.get_tweet_detail(tweet_id)
             retweet = find_one(tweet_detail, 'retweeted_status_result')
             quote = find_one(tweet_detail, 'quoted_status_result')
-            reply_to_id = find_one(tweet_detail, 'in_reply_to_status_id_str', ignore_keys={'quoted_status_result', 'retweeted_status_result'})
-            reply_to_tweet = None
-            if reply_to_id:
-                try:
-                    time.sleep(2)
-                    reply_to_tweet = self.get_tweet_detail(reply_to_id)
-                except Exception as e:
-                    pass
+            reply_to_tweet = self._get_reply_to_tweet(tweet_detail)
             if retweet:
                 retweet_text = parse_text_from_tweet(retweet)
                 retweet_user = find_one(retweet, 'user_results')
