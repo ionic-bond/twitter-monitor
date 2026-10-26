@@ -46,14 +46,32 @@ def parse_media_from_tweet(tweet: dict) -> tuple[list[str], list[str]]:
 
 def parse_text_from_tweet(tweet: dict) -> str:
     note_tweet = find_one(tweet, 'note_tweet', ignore_keys={'quoted_status_result', 'retweeted_status_result'})
+    parsed_text = ""
+    urls = []
+    media = []
     if isinstance(note_tweet, dict):
         full_text = note_tweet.get('note_tweet_results', {}).get('result', {}).get('text')
         if full_text:
             parsed_text = convert_html_to_text(full_text)
-            return parsed_text[:800] + '…' if len(parsed_text) > 800 else parsed_text
-
-    tweet_content = get_content(tweet)
-    return convert_html_to_text(tweet_content.get('full_text', ''))
+            parsed_text = parsed_text[:800] + '…' if len(parsed_text) > 800 else parsed_text
+            urls = note_tweet.get('note_tweet_results', {}).get('result', {}).get('entity_set', {}).get('urls', [])
+    if not parsed_text:
+        tweet_content = get_content(tweet)
+        parsed_text = convert_html_to_text(tweet_content.get('full_text', ''))
+        urls = tweet_content.get('entities', {}).get('urls', [])
+        media = tweet_content.get('extended_entities', {}).get('media', [])
+        if not media:
+            media = tweet_content.get('entities', {}).get('media', [])
+    for url_obj in urls:
+        tco_url = url_obj.get('url')
+        expanded_url = url_obj.get('expanded_url')
+        if tco_url and expanded_url:
+            parsed_text = parsed_text.replace(tco_url, expanded_url)
+    for media_obj in media:
+        tco_url = media_obj.get('url')
+        if tco_url:
+            parsed_text = parsed_text.replace(tco_url, '').strip()
+    return parsed_text
 
 
 def parse_username_from_tweet(tweet: dict) -> str:
